@@ -6,7 +6,6 @@ import 'package:vetadminconnectmobile/Pages/register_page.dart';
 import 'package:vetadminconnectmobile/Repository/account_api.dart';
 
 import '../Model/User.dart';
-import 'home_page_navigation_bar_page.dart';
 import 'home_page_tabs_page.dart';
 
 
