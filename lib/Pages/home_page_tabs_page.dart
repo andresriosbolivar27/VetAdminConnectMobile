@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Pages/profile_page.dart';
 
 import 'pets_page.dart';
 
@@ -20,18 +21,17 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
                 appBar: AppBar(
                   bottom: TabBar(
                     tabs: [
-                      Tab(icon: Image.asset('assets/images/mislibros.png')),
-                      //Tab(icon: Image.asset('assets/images/bookapi.png')),
-                      //Tab(icon: Image.asset('assets/images/bookstore.png')),
-                      const Tab(icon: Icon(Icons.person_2_outlined, color: Colors.black)),
+                      //Tab(text: 'Mascotas', icon: Image.asset('assets/images/mislibros.png')),
+                      const Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black)),
+                      const Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
                     ],
                   ),
-                  title: const Text('Mis Records'),
+                  title: const Text('Cliente'),
                 ),
                 body: const TabBarView(
                   children: [
                     PetsPage(),
-                    //BooksApiPage(),
+                    ProfilePage(),
                     //BooksStorePage(),
                     //ProfilePage(),
                   ],
