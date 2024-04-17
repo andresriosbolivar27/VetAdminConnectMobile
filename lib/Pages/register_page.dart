@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../repository/account_api.dart';
+import '../repository/auth_api_repository.dart';
 import '../utils.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -17,7 +17,7 @@ class RegisterPage extends StatefulWidget {
 enum Genre { male, female }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final AccountApi _accountApi = AccountApi();
+  //final AccountApi _accountApi = AccountApi();
 
   final _name = TextEditingController();
   final _email = TextEditingController();

@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vetadminconnectmobile/Model/LoginDto.dart';
 import 'package:vetadminconnectmobile/Pages/register_page.dart';
-import 'package:vetadminconnectmobile/Repository/account_api.dart';
+import 'package:vetadminconnectmobile/Repository/auth_api_repository.dart';
 
 import '../Model/User.dart';
 import 'home_page_tabs_page.dart';
@@ -20,7 +21,8 @@ class _LoginPageState extends State<LoginPage> {
 
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _firebaseapi = AccountApi();
+  final _authApiRepository = AuthApiRepository();
+
 
   bool _passwordVisible = true;
 
@@ -39,13 +41,14 @@ class _LoginPageState extends State<LoginPage> {
     } else if (!_email.text.isValidEmail()) {
       _showMsg("El correo electrónico es inválido");
     } else {
-      final result = "";//await _firebaseApi.loginUser(_email.text, _password.text);
+      LoginDto _loginDto = LoginDto(email: _email.text, password: _password.text);
+      final result = await _authApiRepository.loginApi(_loginDto);
       print("Resultado $result");
       if (result == "network-request-failed") {
         _showMsg("Revise su conexión a internet");
       } else if (result == "invalid-credential") {
         _showMsg("Correo electrónico o contraseña incorrectas");
-      } else {
+      } else if(result.result){
         _showMsg("Bienvenido");
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
