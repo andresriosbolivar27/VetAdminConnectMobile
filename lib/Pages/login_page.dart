@@ -41,17 +41,22 @@ class _LoginPageState extends State<LoginPage> {
     } else if (!_email.text.isValidEmail()) {
       _showMsg("El correo electrónico es inválido");
     } else {
-      LoginDto _loginDto = LoginDto(email: _email.text, password: _password.text);
-      final result = await _authApiRepository.loginApi(_loginDto);
-      print("Resultado $result");
-      if (result == "network-request-failed") {
-        _showMsg("Revise su conexión a internet");
-      } else if (result == "invalid-credential") {
-        _showMsg("Correo electrónico o contraseña incorrectas");
-      } else if(result.result){
-        _showMsg("Bienvenido");
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
+      try{
+        LoginDto _loginDto = LoginDto(email: _email.text, password: _password.text);
+        final result = await _authApiRepository.loginApi(_loginDto);
+        print("Resultado $result");
+        if (result == "network-request-failed") {
+          _showMsg("Revise su conexión a internet");
+        } else if (result == "invalid-credential") {
+          _showMsg("Correo electrónico o contraseña incorrectas");
+        } else if(result.result){
+          _showMsg("Bienvenido");
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
+        }
+      }
+      catch(e){
+        _showMsg("Correo o contraseña incorrrectos");
       }
     }
   }
