@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
+import 'package:vetadminconnectmobile/Model/Generic/app_exception.dart';
 import 'package:vetadminconnectmobile/Model/LoginDto.dart';
+import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Pages/register_page.dart';
-import 'package:vetadminconnectmobile/Repository/auth_api_repository.dart';
+import 'package:vetadminconnectmobile/Repository/auth_api/auth_http_api_repository.dart';
 
 import '../Model/User.dart';
 import 'home_page_tabs_page.dart';
@@ -21,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
 
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _authApiRepository = AuthApiRepository();
+  final _authApiRepository = AuthHttpApiRepository();
 
 
   bool _passwordVisible = true;
@@ -44,23 +48,61 @@ class _LoginPageState extends State<LoginPage> {
       try{
         LoginDto _loginDto = LoginDto(email: _email.text, password: _password.text);
         final result = await _authApiRepository.loginApi(_loginDto);
-        print("Resultado $result");
-        if (result == "network-request-failed") {
-          _showMsg("Revise su conexión a internet");
-        } else if (result == "invalid-credential") {
-          _showMsg("Correo electrónico o contraseña incorrectas");
-        } else if(result.result){
+        if (!result.wasSuccess) {
+          _showMsg(result.exceptions!.first.exception);
+        } else if(result.wasSuccess){
           _showMsg("Bienvenido");
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
         }
+      }on SocketException catch(e) {
+        _showMsg(e.toString());
+      }on FormatException catch(e) {
+        _showMsg("Error al procesar la respuesta del servidor: ${e.toString()}");
       }
       catch(e){
-        _showMsg("Correo o contraseña incorrrectos");
+        switch (e.runtimeType) {
+          case SocketException:
+            _showMsg("¡No hay conexión a internet!");
+            break;
+          case FormatException:
+            _showMsg("Error al procesar la respuesta del servidor: ${e.toString()}");
+            break;
+          case FetchDataException:
+            _showMsg("Error durante la comunicación con el servidor: ${e.toString()}");
+            break;
+          case BadRequestException:
+            _showMsg("Solicitud inválida: ${e.toString()}");
+            break;
+          case UnauthorisedException:
+            _showMsg("Acceso no autorizado: ${e.toString()}");
+            break;
+          case InvalidInputException:
+            _showMsg("Entrada inválida: ${e.toString()}");
+            break;
+          case NoInternetException:
+            _showMsg("¡No hay conexión a internet!");
+            break;
+          default:
+            print(e.toString());
+            final deserialized =GetLoginResponse(e.toString());
+            _showMsg(deserialized.exceptions!.first.exception);
+        }
       }
     }
   }
-
+  ApiResponse<TokenResult> GetLoginResponse(String response ){
+  final deserialized = ApiResponse.fromJson(
+      Map<String, dynamic>.from(jsonDecode(response)), (json) {
+    // Assume 'UserData' class for the result based on your structure
+    if (json is Map<String, dynamic>) {
+      return  TokenResult.empty().fromJson(json);
+    } else {
+      throw Exception('Unsupported result type: ${json.runtimeType}');
+    }
+  });
+  return deserialized;
+}
 /*  void _getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     Map<String, dynamic> userMap = jsonDecode(prefs.getString("user")!);

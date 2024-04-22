@@ -18,3 +18,9 @@ enum SizeType
   medium,
   large
 }
+enum SeverityException
+{
+Error,
+Warning,
+Information
+}

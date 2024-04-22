@@ -1,6 +1,6 @@
 import 'package:vetadminconnectmobile/Model/Generic/BaseModel.dart';
 
-class TokenResult extends BaseModel<TokenResult> {
+class TokenResult extends BaseModel<TokenResult>{
   final String token;
   final String expiration;
   final bool result;

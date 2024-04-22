@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../repository/auth_api_repository.dart';
 import '../utils.dart';
 
 class RegisterPage extends StatefulWidget {

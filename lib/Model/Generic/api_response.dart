@@ -1,20 +1,26 @@
+import 'package:json_annotation/json_annotation.dart';
+import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
+
+part 'api_response.g.dart';
+
+@JsonSerializable(genericArgumentFactories: true)
 class ApiResponse<T> {
-  Status status;
-  T? data;
-  String? message;
+  final bool wasSuccess;
+  final String? message;
+  final T? result;
+  final List<ExceptionResponse>? exceptions;
 
-  ApiResponse.initial(this.message) : status = Status.INITIAL;
+  ApiResponse({
+    required this.wasSuccess,
+    this.message,
+    this.result,
+    this.exceptions,
+  });
 
-  ApiResponse.loading(this.message) : status = Status.LOADING;
+  factory ApiResponse.fromJson(Map<String, dynamic> json, T Function(Object?) fromJsonT) =>
+      _$ApiResponseFromJson<T>(json, fromJsonT);
 
-  ApiResponse.completed(this.data) : status = Status.COMPLETED;
+  Map<String, dynamic> toJson() => _$ApiResponseToJson<T>(this, (value) => this.result);
 
-  ApiResponse.error(this.message) : status = Status.ERROR;
 
-  @override
-  String toString() {
-    return "Status : $status \n Message : $message \n Data : $data";
-  }
 }
-
-enum Status { INITIAL, LOADING, COMPLETED, ERROR }

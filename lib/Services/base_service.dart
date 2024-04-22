@@ -1,5 +1,8 @@
-abstract class BaseService {
-  Future<dynamic> getResponse(String url);
-  Future<dynamic> getPostApiResponse(String url , dynamic data);
+import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
+
+abstract class BaseService<T> {
+  Future<ApiResponse<T>>getResponse(String url);
+
+  Future<ApiResponse<T>> getPostApiResponse(String url , Map<String, dynamic> data);
 
 }
