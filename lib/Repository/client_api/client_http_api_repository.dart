@@ -9,7 +9,7 @@ class ClientHttpApiRepository implements ClientRepository {
 final BaseService<Client> _apiServices = NetworkApiService("Client");
 
   @override
-  Future<ApiResponse<Client>> getClient(int id) async {
+  Future<ApiResponse<Client>> getClient(String id) async {
     var endpoint = AppUrl.getClientEndpoint;
     final response = await _apiServices.getResponse(
         '$endpoint$id');

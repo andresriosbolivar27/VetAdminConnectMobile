@@ -4,6 +4,6 @@ import 'package:vetadminconnectmobile/Model/LoginDto.dart';
 
 abstract class ClientRepository {
 
-  Future<ApiResponse<Client>> getClient(int Id);
+  Future<ApiResponse<Client>> getClient(String Id);
 
 }
