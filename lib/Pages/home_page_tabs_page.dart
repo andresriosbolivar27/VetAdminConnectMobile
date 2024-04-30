@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Pages/profile_page.dart';
 
-import 'pets_page.dart';
+import 'Client/pets_page.dart';
 
 
 class HomePageTabsPage extends StatefulWidget {

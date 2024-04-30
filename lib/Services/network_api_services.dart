@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Enums.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
@@ -89,6 +90,9 @@ class NetworkApiService<T> extends BaseService<T> {
       if (json is Map<String, dynamic>) {
         if(typeName == "TokenResult"){
           return TokenResult.empty().fromJson(json);
+        }
+        if(typeName == "Client"){
+          return Client.fromJson(json);
         }
       } else {
         throw Exception('Unsupported result type: ${json.runtimeType}');

@@ -1,23 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Model/Client.dart';
+import 'package:vetadminconnectmobile/Model/Pet.dart';
+import 'package:vetadminconnectmobile/Pages/Client/pets_detail_page.dart';
+import 'package:vetadminconnectmobile/Pages/Client/pets_edit_page.dart';
+import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
 
 class PetsPage extends StatefulWidget {
-  const PetsPage({super.key});
-
+   const PetsPage({super.key});
   @override
   State<PetsPage> createState() => _PetsPageState();
 }
 
 class _PetsPageState extends State<PetsPage> {
-  // Sample pet list (replace with your actual data source)
-  final List<String> pets = ['Cat', 'Dog', 'Rabbit', 'Fish'];
+  Client? _client;
+
+  void _showMsg(String msg){
+    SnackBar snackBar = SnackBar(
+      content: Text(msg),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+  void _addButtonClicked() {
+    setState(() {
+      _showMsg("Nueva Mascota");
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClientData(); // Fetch client data on initialization
+  }
+
+  Future<void> _fetchClientData() async {
+    try {
+      final clientRepository = ClientHttpApiRepository();
+      final apiResponse = await clientRepository.getClient(1);
+      if (apiResponse.wasSuccess) {
+        setState(() {
+          _client = apiResponse.result;
+        });
+      } else {
+        _showMsg(apiResponse.exceptions!.first.exception ?? "Error fetching client data");
+      }
+    } catch (error) {
+      _showMsg("Error: $error"); // Handle general errors
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
-        itemCount: pets.length,
+        itemCount: _client!.pets.length,
         itemBuilder: (context, index) {
-          final petName = pets[index];
+          final petName = _client!.pets[index].name;
           return GestureDetector(
             onTap: () {
               Navigator.push(
@@ -78,88 +115,11 @@ class _PetsPageState extends State<PetsPage> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: _addButtonClicked, child: const Icon(Icons.add)),
     );
   }
 }
 
-// Create a PetDetailsPage to display details of the selected pet
-class PetDetailsPage extends StatelessWidget {
-  final String petName;
 
-  const PetDetailsPage({Key? key, required this.petName}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Detalles de $petName'),
-      ),
-      body: Center(
-        child: Text('Aquí se mostrarían los detalles de la mascota $petName'),
-      ),
-    );
-  }
-}
-
-// Create an EditPetPage to edit the selected pet
-class EditPetPage extends StatefulWidget {
-  final String petName;
-
-  const EditPetPage({Key? key, required this.petName}) : super(key: key);
-
-  @override
-  State<EditPetPage> createState() => _EditPetPageState();
-}
-
-class _EditPetPageState extends State<EditPetPage> {
-  final _newPetNameController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _newPetNameController.text = widget.petName; // Initialize with the petName
-  }
-
-  @override
-  void dispose() {
-    _newPetNameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Editar ${widget.petName}'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _newPetNameController,
-              decoration: const InputDecoration(
-                labelText: 'Nuevo nombre de la mascota',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () {
-                // Implement logic to update the pet name (e.g., in a database)
-                // For now, just show a snackbar with the new name and navigate back
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Actualizado a ${_newPetNameController.text}'),
-                  ),
-                );
-                Navigator.pop(context); // Navigate back to the list page
-              },
-              child: const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 

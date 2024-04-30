@@ -1,79 +1,115 @@
 import 'Enums.dart';
 
 class Pet {
-  int _id;
-  String _name;
-  int _age;
-  GenderType _genderType;
-  SizeType _sizeType;
-  int _specieId;
-  int _breedId;
-  int _clientId;
-  String? _photo;
+  int id;
+  String name;
+  int age;
+  int genderType;
+  String genderTypeDescription;
+  int sizeType;
+  String sizeTypeDescription;
+  int specieId;
+  String specieName;
+  int breedId;
+  String breedName;
 
-  Pet(
-      this._id,
-      this._name,
-      this._age,
-      this._genderType,
-      this._sizeType,
-      this._specieId,
-      this._breedId,
-      this._clientId,
-      this._photo,
-      );
+  Pet({
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.genderType,
+    required this.genderTypeDescription,
+    required this.sizeType,
+    required this.sizeTypeDescription,
+    required this.specieId,
+    required this.specieName,
+    required this.breedId,
+    required this.breedName,
+  });
 
-  int get id => _id;
+  factory Pet.fromJson(Map<String, dynamic> json) => Pet(
+    id: json['id'] as int,
+    name: json['name'] as String,
+    age: json['age'] as int,
+    genderType: json['genderType'] as int,
+    genderTypeDescription: json['genderTypeDescription'] as String,
+    sizeType: json['sizeType'] as int,
+    sizeTypeDescription: json['sizeTypeDescription'] as String,
+    specieId: json['specieId'] as int,
+    specieName: json['specieName'] as String,
+    breedId: json['breedId'] as int,
+    breedName: json['breedName'] as String,
+  );
 
-  set id(int value) {
-    _id = value;
+  // Method to convert Pet object to a Map (used during serialization)
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'age': age,
+    'genderType': genderType,
+    'genderTypeDescription': genderTypeDescription,
+    'sizeType': sizeType,
+    'sizeTypeDescription': sizeTypeDescription,
+    'specieId': specieId,
+    'specieName': specieName,
+    'breedId': breedId,
+    'breedName': breedName,
+  };
+
+  int get petId => id;
+  String get petName => name;
+  int get petAge => age;
+  int get petGenderType => genderType;
+  String get petGenderTypeDescription => genderTypeDescription;
+  int get petSizeType => sizeType;
+  String get petSizeTypeDescription => sizeTypeDescription;
+  int get petSpecieId => specieId;
+  String get petSpecieName => specieName;
+  int get petBreedId => breedId;
+  String get petBreedName => breedName;
+
+  // Setters for each property
+  void set petId(int newId) {
+    id = newId;
   }
 
-  String get name => _name;
-
-  set name(String value) {
-    _name = value;
+  void set petName(String newName) {
+    name = newName;
   }
 
-  int get age => _age;
-
-  set age(int value) {
-    _age = value;
+  void set petAge(int newAge) {
+    age = newAge;
   }
 
-  GenderType get genderType => _genderType;
-
-  set genderType(GenderType value) {
-    _genderType = value;
+  void set petGenderType(int newGenderType) {
+    genderType = newGenderType;
   }
 
-  SizeType get sizeType => _sizeType;
-
-  set sizeType(SizeType value) {
-    _sizeType = value;
+  void set petGenderTypeDescription(String newGenderTypeDescription) {
+    genderTypeDescription = newGenderTypeDescription;
   }
 
-  int get specieId => _specieId;
-
-  set specieId(int value) {
-    _specieId = value;
+  void set petSizeType(int newSizeType) {
+    sizeType = newSizeType;
   }
 
-  int get breedId => _breedId;
-
-  set breedId(int value) {
-    _breedId = value;
+  void set petSizeTypeDescription(String newSizeTypeDescription) {
+    sizeTypeDescription = newSizeTypeDescription;
   }
 
-  int get clientId => _clientId;
-
-  set clientId(int value) {
-    _clientId = value;
+  void set petSpecieId(int newSpecieId) {
+    specieId = newSpecieId;
   }
 
-  String? get photo => _photo;
+  void set petSpecieName(String newSpecieName) {
+    specieName = newSpecieName;
+  }
 
-  set photo(String? value) {
-    _photo = value;
+  void set petBreedId(int newBreedId) {
+    breedId = newBreedId;
+  }
+
+  void set petBreedName(String newBreedName) {
+    breedName = newBreedName;
   }
 }

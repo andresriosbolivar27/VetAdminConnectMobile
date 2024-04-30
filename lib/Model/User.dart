@@ -7,12 +7,12 @@ class User {
   String _lastName;
   String _address;
   String? _photo;
-  UserType _userType;
+  int _userType;
   int _cityId;
   String _userName;
   String _email;
-  String _password;
-  String _passwordConfirm;
+  String? _password;
+  String? _passwordConfirm;
   String _phoneNumber;
 
   User(
@@ -38,7 +38,7 @@ class User {
         _lastName = '',
         _address = '',
         _photo = null,
-        _userType = UserType.anonymous,
+        _userType = 0,
         _cityId = 0,
         _userName = '',
         _email = '',
@@ -53,13 +53,13 @@ class User {
   String get lastName => _lastName;
   String get address => _address;
   String? get photo => _photo;
-  UserType get userType => _userType;
+  int get userType => _userType;
   int get cityId => _cityId;
   String get userName => _userName;
   String get email => _email;
   String get phoneNumber => _phoneNumber;
-  String get passwordConfirm => _passwordConfirm;
-  String get password => _password;
+  String? get passwordConfirm => _passwordConfirm;
+  String? get password => _password;
 
   set id(String value) {
     _id = value;
@@ -79,7 +79,7 @@ class User {
   set photo(String? value) {
     _photo = value;
   }
-  set userType(UserType value) {
+  set userType(int value) {
     _userType = value;
   }
   set cityId(int value) {
@@ -94,10 +94,10 @@ class User {
   set phoneNumber(String value) {
     _phoneNumber = value;
   }
-  set passwordConfirm(String value) {
+  set passwordConfirm(String? value) {
     _passwordConfirm = value;
   }
-  set password(String value) {
+  set password(String? value) {
     _password = value;
   }
 
@@ -124,8 +124,7 @@ class User {
         _lastName = json['lastName'],
         _address = json['address'],
         _photo = json['photo'],
-        _userType = UserType.values
-            .firstWhere((type) => type.index == json['userType']),
+        _userType = json['userType'],
         _cityId = json['cityId'],
         _userName = json['userName'],
         _email = json['email'],
