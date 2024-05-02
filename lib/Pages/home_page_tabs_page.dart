@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Pages/Vet/vet_search_page.dart';
 import 'package:vetadminconnectmobile/Pages/profile_page.dart';
 
 import 'Client/pets_page.dart';
@@ -16,14 +17,14 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
   Widget build(BuildContext context) {
     return MaterialApp(
         home: DefaultTabController(
-            length: 4,
+            length: 3,
             child: Scaffold(
                 appBar: AppBar(
-                  bottom: TabBar(
+                  bottom: const TabBar(
                     tabs: [
-                      //Tab(text: 'Mascotas', icon: Image.asset('assets/images/mislibros.png')),
-                      const Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black)),
-                      const Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
+                      Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black)),
+                      Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
+                      Tab(text: 'Veterinarios', icon: Icon(Icons.medical_services_outlined, color: Colors.black)),
                     ],
                   ),
                   title: const Text('Cliente'),
@@ -32,8 +33,7 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
                   children: [
                     PetsPage(),
                     ProfilePage(),
-                    //BooksStorePage(),
-                    //ProfilePage(),
+                    VetSearchPage(),
                   ],
                 )
             )

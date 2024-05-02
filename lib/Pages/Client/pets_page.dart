@@ -6,7 +6,7 @@ import 'package:vetadminconnectmobile/Pages/Client/pets_edit_page.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
 
 class PetsPage extends StatefulWidget {
-  const PetsPage({super.key});
+  const PetsPage({Key? key}) : super(key: key);
 
   @override
   State<PetsPage> createState() => _PetsPageState();
@@ -14,6 +14,33 @@ class PetsPage extends StatefulWidget {
 
 class _PetsPageState extends State<PetsPage> {
   Client? _client;
+  final _searchController = TextEditingController();
+  List<Pet> _filteredPets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchClientData();
+  }
+
+  Future<void> _fetchClientData() async {
+    try {
+      final clientRepository = ClientHttpApiRepository();
+      final apiResponse = await clientRepository
+          .getClient('2bb67fba-3e19-4c66-b697-c73865d95dd7');
+      if (apiResponse.wasSuccess) {
+        setState(() {
+          _client = apiResponse.result;
+          _filteredPets = _client!.pets;
+        });
+      } else {
+        _showMsg(apiResponse.exceptions!.first.exception ??
+            "Error fetching client data");
+      }
+    } catch (error) {
+      _showMsg("Error: $error");
+    }
+  }
 
   void _showMsg(String msg) {
     SnackBar snackBar = SnackBar(
@@ -28,100 +55,95 @@ class _PetsPageState extends State<PetsPage> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchClientData(); // Fetch client data on initialization
+  void _navigateToVeterinarioDetails(Pet petItem) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PetDetailsPage(pet: petItem),
+      ),
+    );
   }
 
-  Future<void> _fetchClientData() async {
-    try {
-      final clientRepository = ClientHttpApiRepository();
-      final apiResponse = await clientRepository.getClient('2bb67fba-3e19-4c66-b697-c73865d95dd7');
-      if (apiResponse.wasSuccess) {
-        setState(() {
-          _client = apiResponse.result;
-        });
-      } else {
-        _showMsg(apiResponse.exceptions!.first.exception ??
-            "Error fetching client data");
-      }
-    } catch (error) {
-      _showMsg("Error: $error"); // Handle general errors
-    }
+  void _filterPets(String searchTerm) {
+    setState(() {
+      _filteredPets = _client!.pets
+          .where((pet) =>
+              pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
+          .toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Buscar mascota...',
+            suffixIcon: Icon(Icons.search),
+          ),
+          onChanged: _filterPets,
+        ),
+      ),
       body: _client != null && _client!.pets.isNotEmpty
           ? ListView.builder(
-              itemCount: _client!.pets.length,
+              itemCount: _filteredPets.length,
               itemBuilder: (context, index) {
-                final petItem = _client!.pets[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PetDetailsPage(pet: petItem),
-                      ),
-                    );
-                  },
-                  child: ListTile(
-                    title: Text(petItem.name),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        switch (value) {
-                          case 'Editar':
-                            // Implement edit functionality here
-                            // (e.g., navigate to an edit screen)
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditPetPage(petName: petItem.name),
-                              ),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Editing $petItem.name'),
-                              ),
-                            );
-                            break;
-                          case 'Eliminar':
-                            // Implement delete functionality here
-                            // (e.g., remove the pet from the list)
-                            //   setState(() {
-                            //     pets.removeAt(index);
-                            //   });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Deleted $petItem.name'),
-                              ),
-                            );
-                            break;
-                        }
-                      },
-                      itemBuilder: (context) {
-                        return [
-                          const PopupMenuItem<String>(
-                            value: 'Editar',
-                            child: Text('Editar'),
-                          ),
-                          const PopupMenuItem<String>(
-                            value: 'Eliminar',
-                            child: Text('Eliminar'),
-                          ),
-                        ];
-                      },
-                    ),
+                final petItem = _filteredPets[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage:
+                        NetworkImage('https://via.placeholder.com/150'),
                   ),
+                  title: Text(petItem.name),
+                  subtitle: Text(petItem.breedName),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'Editar':
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPetPage(pet: petItem),
+                            ),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Editando ${petItem.name}'),
+                            ),
+                          );
+                          break;
+                        case 'Eliminar':
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Eliminado ${petItem.name}'),
+                            ),
+                          );
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) {
+                      return [
+                        const PopupMenuItem<String>(
+                          value: 'Editar',
+                          child: Text('Editar'),
+                        ),
+                        const PopupMenuItem<String>(
+                          value: 'Eliminar',
+                          child: Text('Eliminar'),
+                        ),
+                      ];
+                    },
+                  ),
+                  onTap: () {
+                    _navigateToVeterinarioDetails(petItem);
+                  },
                 );
               },
             )
           : const Center(
-              child: CircularProgressIndicator(), // Show error message
+              child: CircularProgressIndicator(),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addButtonClicked,
