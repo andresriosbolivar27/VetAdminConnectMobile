@@ -135,9 +135,9 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const Image(
-                  image: AssetImage('assets/images/logo.png'),
-                  width: 150,
-                  height: 150,
+                  image: AssetImage('assets/images/LogoLogin.png'),
+                  width: 200,
+                  height: 200,
                 ),
                 const SizedBox(
                   height: 16.0,

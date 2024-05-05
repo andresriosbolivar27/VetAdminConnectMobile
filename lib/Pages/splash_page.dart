@@ -29,20 +29,16 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image(
-              image: AssetImage('assets/images/logo.png'),
-              width: 200,
-              height: 200,
-            ),
-          ],
-        )),
+    return Scaffold(
+      body: Container(
+        width: MediaQuery.of(context).size.width, // Ancho de la pantalla
+        height: MediaQuery.of(context).size.height, // Alto de la pantalla
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/logo.png'),
+            fit: BoxFit.cover, // Ajustar la imagen para cubrir todo el contenedor
+          ),
+        ),
       ),
     );
   }
