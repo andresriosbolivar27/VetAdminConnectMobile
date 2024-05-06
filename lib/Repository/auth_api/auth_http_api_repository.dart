@@ -10,10 +10,11 @@ class AuthHttpApiRepository implements AuthRepository {
 final BaseService<TokenResult> _apiServices = NetworkApiService("TokenResult"); // Specify type for BaseService
 
 @override
-Future<ApiResponse<TokenResult>> loginApi(LoginDto data) async {
+Future<ApiResponse<TokenResult>> loginApi(LoginDto data, String token) async {
   final response = await _apiServices.getPostApiResponse(
     AppUrl.loginEndPoint,
     data.toJson(),
+    token
   );
   return response; // No need for manual conversion from dynamic
 }

@@ -45,8 +45,8 @@ class _LoginPageState extends State<LoginPage> {
       _showMsg("El correo electrónico es inválido");
     } else {
       try{
-        LoginDto _loginDto = LoginDto(email: _email.text, password: _password.text);
-        final result = await _authApiRepository.loginApi(_loginDto);
+        LoginDto loginDto = LoginDto(email: _email.text, password: _password.text);
+        final result = await _authApiRepository.loginApi(loginDto, '');
         if (!result.wasSuccess) {
           _showMsg(result.exceptions!.first.exception);
         } else if(result.wasSuccess){

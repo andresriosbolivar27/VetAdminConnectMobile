@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:vetadminconnectmobile/Model/City.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
+import 'package:vetadminconnectmobile/Model/Country.dart';
+import 'package:vetadminconnectmobile/Model/Departamento.dart';
 import 'package:vetadminconnectmobile/Model/Enums.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
@@ -15,12 +18,21 @@ class NetworkApiService<T> extends BaseService<T> {
   final String typeName;
   NetworkApiService(this.typeName);
   @override
-  Future<ApiResponse<T>> getResponse(String url) async {
+  Future<ApiResponse<T>> getResponse(String url, String bearerToken) async {
     if (kDebugMode) {
       print(url);
     }
     try {
-      final response = await http.get(Uri.parse(url));
+      final Map<String, String> headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+      };
+      if (bearerToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $bearerToken';
+      }
+      final response = await http.get(
+          Uri.parse(url),
+          headers: headers
+          );
       return _handleResponse<T>(response);
     } on SocketException {
       throw FetchDataException('No Internet Connection');
@@ -28,17 +40,21 @@ class NetworkApiService<T> extends BaseService<T> {
   }
 
   @override
-  Future<ApiResponse<T>> getPostApiResponse(String url, Map<String, dynamic> data) async {
+  Future<ApiResponse<T>> getPostApiResponse(String url, Map<String, dynamic> data, String bearerToken) async {
     if (kDebugMode) {
       print(url);
       print(data);
     }
     try {
+      final Map<String, String> headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+      };
+      if (bearerToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $bearerToken';
+      }
       final response = await http.post(
         Uri.parse(url),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        headers: headers,
         body: jsonEncode(data), // Encode data as JSON
       ).timeout(const Duration(seconds: 10));
       return _handleResponse<T>(response);
@@ -94,7 +110,21 @@ class NetworkApiService<T> extends BaseService<T> {
         if(typeName == "Client"){
           return Client.fromJson(json);
         }
-      } else {
+        if(typeName == "Country"){
+          return Country.fromJson(json);
+        }
+      }if(json is List<dynamic>){
+        if(typeName == "Country"){
+          return json.map((json) => Country.fromJson(json)).toList();
+        }
+        if(typeName == "State"){
+          return json.map((json) => Departamento.fromJson(json)).toList();
+        }
+        if(typeName == "City"){
+          return json.map((json) => City.fromJson(json)).toList();
+        }
+      }
+      else {
         throw Exception('Unsupported result type: ${json.runtimeType}');
       }
     });

@@ -4,6 +4,6 @@ import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 
 abstract class AuthRepository {
 
-  Future<ApiResponse<TokenResult>> loginApi(LoginDto data);
+  Future<ApiResponse<TokenResult>> loginApi(LoginDto data, String token);
 
 }

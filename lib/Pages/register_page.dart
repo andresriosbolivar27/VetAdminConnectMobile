@@ -1,8 +1,15 @@
 import 'dart:convert';
-
+import 'package:country_state_city_pro/country_state_city_pro.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vetadminconnectmobile/Model/City.dart';
+import 'package:vetadminconnectmobile/Model/Country.dart';
+import 'package:vetadminconnectmobile/Model/Departamento.dart';
+import 'package:vetadminconnectmobile/Repository/city_api/city_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Repository/country_api/country_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Repository/state_api/state_http_api_repository.dart';
 
 import '../utils.dart';
 
@@ -17,36 +24,31 @@ enum Genre { male, female }
 
 class _RegisterPageState extends State<RegisterPage> {
   //final AccountApi _accountApi = AccountApi();
+  final _countryApiRepository = CountryHttpApiRepository();
+  final _stateApiRepository = StateHttpApiRepository();
+  final _cityApiRepository = CityHttpApiRepository();
 
   final _name = TextEditingController();
+  final _lastName = TextEditingController();
+  final _document = TextEditingController();
+  final _phone = TextEditingController();
+  final _address = TextEditingController();
+  final _country = TextEditingController();
+  final _state = TextEditingController();
+  final _city = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _repPassword = TextEditingController();
-  final _city = TextEditingController();
-
-  bool _esAccionFavorite = false,
-      _esAventuraFavorite = false,
-      _esCienciaFiccionFavorite = false;
-  bool _esDramaFavorite = false,
-      _esFantasiaFavorite = false,
-      _esRomanceFavorite = false;
-  bool _esSuspensoFavorite = false, _esTerrorFavorite = false;
-
   bool _passwordVisible = true;
   bool _repPasswordVisible = true;
-
   String _birthDate = "Fecha de Nacimiento";
-
   Genre? _genre = Genre.male;
   String _genreSelected = 'Masculino';
 
-  final List<String> _cities = [
-    'Barranquilla',
-    'Bogotá',
-    'Cali',
-    'Medellín',
-    'Pereira',
-  ];
+  List<Country> _countries = [];
+  List<Departamento> _states= [];
+  List<City> _cities= [];
+
 
   String _dateConverter(DateTime newDate) {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
@@ -77,7 +79,14 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
+  void initState() {
+    _loadCountriesAsync();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    double dropdownWidth = MediaQuery.of(context).size.width * 0.91;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -87,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const Image(
-                  image: AssetImage('assets/images/logo.png'),
+                  image: AssetImage('assets/images/LogoLogin.png'),
                   width: 150,
                   height: 150,
                 ),
@@ -98,8 +107,52 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _name,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Nombre',
+                      labelText: 'Nombres',
                       prefixIcon: Icon(Icons.person)),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                TextFormField(
+                  controller: _lastName,
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Apellidos',
+                      prefixIcon: Icon(Icons.person)),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                TextFormField(
+                  controller: _document,
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Documento Identidad',
+                      prefixIcon: Icon(Icons.perm_identity)),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                TextFormField(
+                  controller: _phone,
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Telefono',
+                      prefixIcon: Icon(Icons.phone)),
+                  keyboardType: TextInputType.text,
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                TextFormField(
+                  controller: _address,
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Direccion',
+                      prefixIcon: Icon(Icons.location_on)),
                   keyboardType: TextInputType.text,
                 ),
                 const SizedBox(
@@ -116,6 +169,24 @@ class _RegisterPageState extends State<RegisterPage> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) =>
                       value!.isValidEmail() ? null : 'Correo invalido',
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                CountryStateCityPicker(
+                    country: _country,
+                    state: _state,
+                    city: _city,
+                    dialogColor: Colors.grey.shade200,
+                    textFieldDecoration: const InputDecoration(
+                        filled: false,
+                        suffixIcon: Icon(Icons.arrow_downward_rounded),
+                        border:  OutlineInputBorder(borderSide:
+                        BorderSide(
+                          color:Colors.black,
+                          style: BorderStyle.solid,
+                          strokeAlign: BorderSide.strokeAlignCenter
+                        )))
                 ),
                 const SizedBox(
                   height: 16.0,
@@ -165,24 +236,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(
                   height: 16.0,
                 ),
-                DropdownMenu<String>(
-                  width: 330,
-                  enableFilter: true,
-                  requestFocusOnTap: true,
-                  label: const Text("Ciudad"),
-                  onSelected: (String? city) {
-                    setState(() {
-                      _city.text = city!;
-                    });
-                  },
-                  dropdownMenuEntries:
-                      _cities.map<DropdownMenuEntry<String>>((String city) {
-                    return DropdownMenuEntry<String>(value: city, label: city);
-                  }).toList(),
-                ),
-                const SizedBox(
-                  height: 16.0,
-                ),
                 const Text(
                   "Seleccione su género",
                   style: TextStyle(fontSize: 20),
@@ -227,118 +280,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Text(
                   "Géneros literarios favoritos",
                   style: TextStyle(fontSize: 20),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Acción'),
-                        value: _esAccionFavorite,
-                        selected: _esAccionFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esAccionFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Aventura'),
-                        value: _esAventuraFavorite,
-                        selected: _esAventuraFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esAventuraFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Ciencia ficción'),
-                        value: _esCienciaFiccionFavorite,
-                        selected: _esCienciaFiccionFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esCienciaFiccionFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Drama'),
-                        value: _esDramaFavorite,
-                        selected: _esDramaFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esDramaFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Fantasía'),
-                        value: _esFantasiaFavorite,
-                        selected: _esFantasiaFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esFantasiaFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Romance'),
-                        value: _esRomanceFavorite,
-                        selected: _esRomanceFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esRomanceFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Suspenso'),
-                        value: _esSuspensoFavorite,
-                        selected: _esSuspensoFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esSuspensoFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: CheckboxListTile(
-                        title: const Text('Terror'),
-                        value: _esTerrorFavorite,
-                        selected: _esTerrorFavorite,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _esTerrorFavorite = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
                 ),
                 ElevatedButton(
                   style: TextButton.styleFrom(
@@ -391,6 +332,33 @@ class _RegisterPageState extends State<RegisterPage> {
     //createUser(user);
   }
 
+  Future<void> _loadCountriesAsync() async {
+    if(!_countries.any((element) => false)){
+      var countries = await _countryApiRepository.getCombo('');
+      if(countries.wasSuccess){
+        _countries = countries.result!;
+      }
+    }
+  }
+
+  Future<void> _loadStatesAsync(int countryId) async {
+    if(!_cities.any((element) => false)){
+      var states = await _stateApiRepository.getCombo(countryId, '');
+      if(states.wasSuccess){
+        _states = states.result!;
+      }
+    }
+  }
+
+  Future<void> _loadCitiesAsync(int stateId) async {
+    if(!_cities.any((element) => false)){
+      var cities = await _cityApiRepository.getCombo(stateId, '');
+      if(cities.wasSuccess){
+        _cities = cities.result!;
+      }
+    }
+  }
+
   // Future<void> createUser(User user) async{
   //   var result = await _firebaseApi.createUser(user);
   //   Navigator.pop(context);
@@ -409,6 +377,3 @@ extension on String {
         .hasMatch(this);
   }
 }
-
-//Marzo 21 de 2024
-//Abril 4 de 2024
