@@ -27,7 +27,7 @@ class _PetsPageState extends State<PetsPage> {
     try {
       final clientRepository = ClientHttpApiRepository();
       final apiResponse = await clientRepository
-          .getClient('2bb67fba-3e19-4c66-b697-c73865d95dd7', '');
+          .getClient('f77711ea-d38c-4311-8084-547c56b81941 ', '');
       if (apiResponse.wasSuccess) {
         setState(() {
           _client = apiResponse.result;

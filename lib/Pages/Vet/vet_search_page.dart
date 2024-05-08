@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Model/PaginationDto.dart';
+import 'package:vetadminconnectmobile/Model/Vet.dart';
 import 'package:vetadminconnectmobile/Pages/Vet/vet_detail_page.dart';
+import 'package:vetadminconnectmobile/Repository/vet_api/vet_http_api_repository.dart';
 
 class VetSearchPage extends StatefulWidget {
   const VetSearchPage({super.key});
@@ -10,51 +13,65 @@ class VetSearchPage extends StatefulWidget {
 }
 
 class _VetSearchPageState extends State<VetSearchPage> {
+  var pagination = PaginationDto(null, 1, 10, '');
+  var vetApi = VetHttpApiRepository();
   final _searchController = TextEditingController();
-  List<Especialista> _especialistas = [
-    Especialista(
-      nombre: 'Dra. Sandra Zuñiga López',
-      especialidad: 'Médico Cirujano',
-      ubicacion: 'Medellín',
-      imagen: 'https://picsum.photos/200/300',
-    ),
-    Especialista(
-      nombre: 'Dr. Andrés Castaño Ríos',
-      especialidad: 'Odontólogo',
-      ubicacion: 'Bogotá',
-      imagen: 'https://picsum.photos/200/301',
-    ),
-    Especialista(
-      nombre: 'Dra. Paola Torres Pérez',
-      especialidad: 'Nutricionista',
-      ubicacion: 'Cali',
-      imagen: 'https://picsum.photos/200/302',
-    ),
-  ];
+  List<Vet> _especialistas = [];
+  // List<Especialista> _especialistas = [
+  //   Especialista(
+  //     nombre: 'Dra. Sandra Zuñiga López',
+  //     especialidad: 'Médico Cirujano',
+  //     ubicacion: 'Medellín',
+  //     imagen: 'https://picsum.photos/200/300',
+  //   ),
+  //   Especialista(
+  //     nombre: 'Dr. Andrés Castaño Ríos',
+  //     especialidad: 'Odontólogo',
+  //     ubicacion: 'Bogotá',
+  //     imagen: 'https://picsum.photos/200/301',
+  //   ),
+  //   Especialista(
+  //     nombre: 'Dra. Paola Torres Pérez',
+  //     especialidad: 'Nutricionista',
+  //     ubicacion: 'Cali',
+  //     imagen: 'https://picsum.photos/200/302',
+  //   ),
+  // ];
 
-  List<Especialista> _filteredEspecialistas = [];
+  List<Vet> _filteredEspecialistas = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredEspecialistas = _especialistas;
+    getVets();
+    //_filteredEspecialistas = _especialistas;
     _searchController.addListener(() {
       _filterEspecialistas();
     });
   }
+  void getVets()async{
+    var response = await vetApi.getVets(pagination, '');
+    if (response.wasSuccess) {
+      setState(() {
+        _especialistas = response.result!;
+        _filteredEspecialistas = _especialistas;
+      });
+    }
+  }
+  void _filterEspecialistas() async {
 
-  void _filterEspecialistas() {
     final searchTerm = _searchController.text.toLowerCase();
     setState(() {
       _filteredEspecialistas = _especialistas.where((especialista) {
-        return especialista.nombre.toLowerCase().contains(searchTerm) ||
-            especialista.especialidad.toLowerCase().contains(searchTerm) ||
-            especialista.ubicacion.toLowerCase().contains(searchTerm);
+        return
+          especialista.fullName.toLowerCase().contains(searchTerm) ||
+              especialista.vetSpecialities.first.name.toLowerCase().contains(searchTerm) ||
+              especialista.cityId.toString().toLowerCase().contains(searchTerm);
       }).toList();
     });
   }
 
-  void _navigateToVeterinarioDetails(Especialista veterinario) {
+  void _navigateToVeterinarioDetails(Vet veterinario) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -81,11 +98,11 @@ class _VetSearchPageState extends State<VetSearchPage> {
           final veterinario = _filteredEspecialistas[index];
           return ListTile(
             leading: CircleAvatar(
-              backgroundImage: NetworkImage(veterinario.imagen),
+              backgroundImage: NetworkImage('https://picsum.photos/200/302'),
             ),
-            title: Text(veterinario.nombre),
+            title: Text(veterinario.fullName),
             subtitle:
-                Text(veterinario.especialidad + ' - ' + veterinario.ubicacion),
+            Text(veterinario.vetSpecialities.first.name + ' - ' + veterinario.cityId.toString()),
             trailing: Icon(Icons.arrow_forward),
             onTap: () => _navigateToVeterinarioDetails(veterinario),
           );

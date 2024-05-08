@@ -11,6 +11,7 @@ import 'package:vetadminconnectmobile/Model/Enums.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
 import 'package:vetadminconnectmobile/Model/TokenResult.dart';
+import 'package:vetadminconnectmobile/Model/Vet.dart';
 import '../Model/Generic/app_exception.dart';
 import 'base_service.dart';
 
@@ -24,7 +25,8 @@ class NetworkApiService<T> extends BaseService<T> {
     }
     try {
       final Map<String, String> headers = {
-        'Content-Type': 'application/json; charset=UTF-8',
+        //'Content-Type': 'application/json; charset=UTF-8',
+        'accept': '*/*',
       };
       if (bearerToken.isNotEmpty) {
         headers['Authorization'] = 'Bearer $bearerToken';
@@ -122,6 +124,9 @@ class NetworkApiService<T> extends BaseService<T> {
         }
         if(typeName == "City"){
           return json.map((json) => City.fromJson(json)).toList();
+        }
+        if(typeName == "Vet"){
+          return json.map((json) => Vet.fromJson(json)).toList();
         }
       }
       else {

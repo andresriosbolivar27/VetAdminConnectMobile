@@ -1,12 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:country_state_city_pro/country_state_city_pro.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vetadminconnectmobile/Model/City.dart';
+import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Country.dart';
 import 'package:vetadminconnectmobile/Model/Departamento.dart';
+import 'package:vetadminconnectmobile/Repository/auth_api/auth_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Repository/auth_api/auth_repository.dart';
 import 'package:vetadminconnectmobile/Repository/city_api/city_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/country_api/country_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/state_api/state_http_api_repository.dart';
@@ -22,8 +27,17 @@ class RegisterPage extends StatefulWidget {
 
 enum Genre { male, female }
 
+enum UserType {
+  client(1, 'Cliente'),
+  vet(2, 'Veterinario');
+
+  const UserType(this.id, this.roleName);
+  final int id;
+  final String roleName;
+}
+
 class _RegisterPageState extends State<RegisterPage> {
-  //final AccountApi _accountApi = AccountApi();
+  final _accountApi = AuthHttpApiRepository();
   final _countryApiRepository = CountryHttpApiRepository();
   final _stateApiRepository = StateHttpApiRepository();
   final _cityApiRepository = CityHttpApiRepository();
@@ -39,16 +53,18 @@ class _RegisterPageState extends State<RegisterPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _repPassword = TextEditingController();
+  final _roleController = TextEditingController();
   bool _passwordVisible = true;
   bool _repPasswordVisible = true;
   String _birthDate = "Fecha de Nacimiento";
   Genre? _genre = Genre.male;
   String _genreSelected = 'Masculino';
+  late String? _profileImagePath =
+      ''; // Ruta de la imagen de perfil seleccionada
 
   List<Country> _countries = [];
-  List<Departamento> _states= [];
-  List<City> _cities= [];
-
+  List<Departamento> _states = [];
+  List<City> _cities = [];
 
   String _dateConverter(DateTime newDate) {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
@@ -80,8 +96,18 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void initState() {
-    _loadCountriesAsync();
     super.initState();
+  }
+
+  Future<void> _selectProfilePicture() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImagePath = pickedFile.path;
+      });
+    }
   }
 
   @override
@@ -181,13 +207,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     textFieldDecoration: const InputDecoration(
                         filled: false,
                         suffixIcon: Icon(Icons.arrow_downward_rounded),
-                        border:  OutlineInputBorder(borderSide:
-                        BorderSide(
-                          color:Colors.black,
-                          style: BorderStyle.solid,
-                          strokeAlign: BorderSide.strokeAlignCenter
-                        )))
-                ),
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.black,
+                                style: BorderStyle.solid,
+                                strokeAlign: BorderSide.strokeAlignCenter)))),
                 const SizedBox(
                   height: 16.0,
                 ),
@@ -268,6 +292,30 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ],
                 ),
+                DropdownMenu<UserType>(
+                  width: dropdownWidth,
+                  controller: _roleController,
+                  // requestFocusOnTap is enabled/disabled by platforms when it is null.
+                  // On mobile platforms, this is false by default. Setting this to true will
+                  // trigger focus request on the text field and virtual keyboard will appear
+                  // afterward. On desktop platforms however, this defaults to true.
+                  requestFocusOnTap: true,
+                  label: const Text('Tipo Usuario'),
+                  onSelected: (UserType? color) {
+                    setState(() {});
+                  },
+                  dropdownMenuEntries: UserType.values
+                      .map<DropdownMenuEntry<UserType>>((UserType role) {
+                    return DropdownMenuEntry<UserType>(
+                      value: role,
+                      label: role.roleName,
+                      enabled: role.name != 'Grey',
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
                 ElevatedButton(
                   child: Text(_birthDate),
                   onPressed: () {
@@ -278,9 +326,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   height: 16.0,
                 ),
                 const Text(
-                  "Géneros literarios favoritos",
+                  "Seleccione una imagen",
                   style: TextStyle(fontSize: 20),
                 ),
+                const SizedBox(height: 16.0),
+                _buildProfilePicture(),
+                const SizedBox(height: 16.0),
                 ElevatedButton(
                   style: TextButton.styleFrom(
                     textStyle: const TextStyle(fontSize: 14),
@@ -292,6 +343,32 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfilePicture() {
+    return GestureDetector(
+      onTap: _selectProfilePicture,
+      child: Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          backgroundBlendMode: BlendMode.darken,
+          shape: BoxShape.circle,
+          color: Colors.grey[200],
+          image: _profileImagePath != null
+              ? DecorationImage(
+                  image: FileImage(File(_profileImagePath!)),
+                  fit: BoxFit.cover,
+                )
+              : null,
+        ),
+        child: _profileImagePath == null
+            ? const Center(
+                child: Icon(Icons.camera_alt, size: 100, color: Colors.black),
+              )
+            : null,
       ),
     );
   }
@@ -311,10 +388,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 "ERROR: La contraseña debe tener mas de 6 o más digitos");
           } else {
             if (_password.text == _repPassword.text) {
-           //   var user = User(_name.text, _email.text, _password.text);
-           //   _saveUser(user);
-              registerUser();
-           //   Navigator.pop(context);
+              //   var user = User(_name.text, _email.text, _password.text);
+              //   _saveUser(user);
+              //registerUser();
+              //   Navigator.pop(context);
             } else {
               showMessage("ERROR: Las contraseñas no son iguales");
             }
@@ -324,36 +401,52 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  Future<void> registerUser() async {
-    //var result = await _accountApi. registerUser(_email.text, _password.text);
-    print('registradp');
-    //valido que result si es un uid osea que fue exitoso
-    //var user = User (result, _name.text, _email.text);
-    //createUser(user);
-  }
+  // Future<void> registerUser() async {
+  //   var client = Client(
+  //     _document.text,
+  //     _name.text,
+  //     _lastName.text,
+  //     _address.text,
+  //     _profileImagePath!,
+  //     _roleController.text,
+  //     _cityId.,
+  //     String userName,
+  //     String email,
+  //     String? password,
+  //     String? passwordConfirm,
+  //     String phoneNumber,
+  //     int clientId,
+  //     List<Pet> pets,
+  //   )
+  //   var result = await _accountApi.createClientApi(ata, token) ;
+  //   print('registradp');
+  //   //valido que result si es un uid osea que fue exitoso
+  //   //var user = User (result, _name.text, _email.text);
+  //   //createUser(user);
+  // }
 
   Future<void> _loadCountriesAsync() async {
-    if(!_countries.any((element) => false)){
+    if (!_countries.any((element) => false)) {
       var countries = await _countryApiRepository.getCombo('');
-      if(countries.wasSuccess){
+      if (countries.wasSuccess) {
         _countries = countries.result!;
       }
     }
   }
 
   Future<void> _loadStatesAsync(int countryId) async {
-    if(!_cities.any((element) => false)){
+    if (!_cities.any((element) => false)) {
       var states = await _stateApiRepository.getCombo(countryId, '');
-      if(states.wasSuccess){
+      if (states.wasSuccess) {
         _states = states.result!;
       }
     }
   }
 
   Future<void> _loadCitiesAsync(int stateId) async {
-    if(!_cities.any((element) => false)){
+    if (!_cities.any((element) => false)) {
       var cities = await _cityApiRepository.getCombo(stateId, '');
-      if(cities.wasSuccess){
+      if (cities.wasSuccess) {
         _cities = cities.result!;
       }
     }

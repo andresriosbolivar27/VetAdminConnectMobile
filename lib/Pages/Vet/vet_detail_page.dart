@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Model/Vet.dart';
 import 'package:vetadminconnectmobile/Pages/Vet/vet_search_page.dart';
 
 class VeterinarioDetailsPage extends StatelessWidget {
-  final Especialista veterinario;
+  final Vet veterinario;
 
   const VeterinarioDetailsPage({Key? key, required this.veterinario}) : super(key: key);
 
@@ -11,7 +12,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detalles de ${veterinario.nombre}'),
+        title: Text('Detalles de ${veterinario.fullName}'),
       ),
       body: Center(
         child: Card(
@@ -25,7 +26,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: Image.network(
-                  veterinario.imagen,
+                  'https://picsum.photos/200/302',
                   fit: BoxFit.cover,
                   height: 200,
                 ),
@@ -37,7 +38,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
                   children: [
                     // Pet name with bigger font and accent color
                     Text(
-                      veterinario.nombre,
+                      veterinario.fullName,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -51,7 +52,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
                         const Icon(Icons.calendar_today_outlined, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Edad: ${veterinario.nombre} años',
+                          'Edad: ${veterinario.firstName} años',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
@@ -62,7 +63,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
                         const Icon(Icons.pets_outlined, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Especialidad: ${veterinario.especialidad}',
+                          'Especialidad: ${veterinario.vetSpecialities.first.name}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
@@ -73,7 +74,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
                         const Icon(Icons.wc_outlined, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Ubicación: ${veterinario.ubicacion}',
+                          'Ubicación: ${veterinario.cityId}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
