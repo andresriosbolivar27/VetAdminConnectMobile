@@ -30,6 +30,7 @@ class Vet extends User {
       super.photo,
       super.userType,
       super.cityId,
+      super.cityName,
       super.userName,
       super.email,
       super.password,
@@ -41,7 +42,7 @@ class Vet extends User {
 
 
   factory Vet.fromJson(Map<String, dynamic> json) {
-    var vetSpecialitiesJsonList = json['vetSpecialities'] as List<dynamic>;
+    var vetSpecialitiesJsonList = json['vetSpecialities'] as List<dynamic> ?? [];
     List<VetSpeciality> vetSpecialities = vetSpecialitiesJsonList
         .map((vetSpecialityJson) => VetSpeciality.fromJson(vetSpecialityJson))
         .toList();
@@ -55,13 +56,14 @@ class Vet extends User {
       json['photo'],
       json['userType'],
       json['cityId'],
+      json['cityName'],
       json['userName'],
       json['email'],
       json['password'],
       json['passwordConfirm'],
       json['phoneNumber'],
       json['vetId'],
-      vetSpecialities,
+      vetSpecialities ?? [],
     );
   }
 

@@ -9,6 +9,7 @@ class User {
   String? _photo;
   int _userType;
   int _cityId;
+  String _cityName;
   String _userName;
   String _email;
   String? _password;
@@ -24,6 +25,7 @@ class User {
       this._photo,
       this._userType,
       this._cityId,
+      this._cityName,
       this._userName,
       this._email,
       this._password,
@@ -40,6 +42,7 @@ class User {
         _photo = null,
         _userType = 0,
         _cityId = 0,
+        _cityName = '',
         _userName = '',
         _email = '',
         _password = '',
@@ -55,6 +58,7 @@ class User {
   String? get photo => _photo;
   int get userType => _userType;
   int get cityId => _cityId;
+  String get cityName => _cityName;
   String get userName => _userName;
   String get email => _email;
   String get phoneNumber => _phoneNumber;
@@ -85,6 +89,9 @@ class User {
   set cityId(int value) {
     _cityId = value;
   }
+  set cityName(String value) {
+    _cityName = value;
+  }
   set userName(String value) {
     _userName = value;
   }
@@ -110,6 +117,7 @@ class User {
     'photo': _photo,
     'userType': _userType.toString().split('.').last,
     'cityId': _cityId,
+    'cityName': _cityName,
     'userName': _userName,
     'email': _email,
     'password': _password,
@@ -126,6 +134,7 @@ class User {
         _photo = json['photo'],
         _userType = json['userType'],
         _cityId = json['cityId'],
+        _cityName = json['cityName'],
         _userName = json['userName'],
         _email = json['email'],
         _password = json['password'],

@@ -13,38 +13,16 @@ class VetSearchPage extends StatefulWidget {
 }
 
 class _VetSearchPageState extends State<VetSearchPage> {
-  var pagination = PaginationDto(null, 1, 10, '');
+  var pagination = PaginationDto(null, 1, 100, '');
   var vetApi = VetHttpApiRepository();
   final _searchController = TextEditingController();
   List<Vet> _especialistas = [];
-  // List<Especialista> _especialistas = [
-  //   Especialista(
-  //     nombre: 'Dra. Sandra Zuñiga López',
-  //     especialidad: 'Médico Cirujano',
-  //     ubicacion: 'Medellín',
-  //     imagen: 'https://picsum.photos/200/300',
-  //   ),
-  //   Especialista(
-  //     nombre: 'Dr. Andrés Castaño Ríos',
-  //     especialidad: 'Odontólogo',
-  //     ubicacion: 'Bogotá',
-  //     imagen: 'https://picsum.photos/200/301',
-  //   ),
-  //   Especialista(
-  //     nombre: 'Dra. Paola Torres Pérez',
-  //     especialidad: 'Nutricionista',
-  //     ubicacion: 'Cali',
-  //     imagen: 'https://picsum.photos/200/302',
-  //   ),
-  // ];
-
   List<Vet> _filteredEspecialistas = [];
 
   @override
   void initState() {
     super.initState();
     getVets();
-    //_filteredEspecialistas = _especialistas;
     _searchController.addListener(() {
       _filterEspecialistas();
     });
@@ -58,15 +36,35 @@ class _VetSearchPageState extends State<VetSearchPage> {
       });
     }
   }
-  void _filterEspecialistas() async {
-
+  void _filterEspecialistas() {
     final searchTerm = _searchController.text.toLowerCase();
+    if (searchTerm.isEmpty) {
+      setState(() {
+        _filteredEspecialistas = _especialistas;
+      });
+      return;
+    }
+
     setState(() {
       _filteredEspecialistas = _especialistas.where((especialista) {
-        return
-          especialista.fullName.toLowerCase().contains(searchTerm) ||
-              especialista.vetSpecialities.first.name.toLowerCase().contains(searchTerm) ||
-              especialista.cityId.toString().toLowerCase().contains(searchTerm);
+        final fullNameLower = especialista.fullName.toLowerCase();
+        final cityNameLower = especialista.cityName.toLowerCase();
+        final specialitiesLower = especialista.vetSpecialities.map((speciality) => speciality.name.toLowerCase()).toList();
+
+        if (fullNameLower.contains(searchTerm) ||
+            cityNameLower.contains(searchTerm)) {
+          return true;
+        }
+
+        if (specialitiesLower.isNotEmpty) {
+          for (final speciality in specialitiesLower) {
+            if (speciality.contains(searchTerm)) {
+              return true;
+            }
+          }
+        }
+
+        return false;
       }).toList();
     });
   }
@@ -86,42 +84,31 @@ class _VetSearchPageState extends State<VetSearchPage> {
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
-          decoration: InputDecoration(
-            hintText: 'Buscar especialista...',
+          decoration: const InputDecoration(
+            hintText: 'Nombre, especialidad o ciudad...',
             suffixIcon: Icon(Icons.search),
           ),
         ),
       ),
-      body: ListView.builder(
+      body: _filteredEspecialistas != null && _filteredEspecialistas!.isNotEmpty
+      ? ListView.builder(
         itemCount: _filteredEspecialistas.length,
         itemBuilder: (context, index) {
           final veterinario = _filteredEspecialistas[index];
           return ListTile(
-            leading: CircleAvatar(
+            leading: const CircleAvatar(
               backgroundImage: NetworkImage('https://picsum.photos/200/302'),
             ),
             title: Text(veterinario.fullName),
-            subtitle:
-            Text(veterinario.vetSpecialities.first.name + ' - ' + veterinario.cityId.toString()),
-            trailing: Icon(Icons.arrow_forward),
+            subtitle: Text(veterinario.vetSpecialities.isEmpty ? veterinario.cityName : '${veterinario.vetSpecialities.first.name} - ${veterinario.cityName}'),
+            trailing: const Icon(Icons.arrow_forward),
             onTap: () => _navigateToVeterinarioDetails(veterinario),
           );
         },
+      ):
+      const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
-}
-
-class Especialista {
-  String nombre;
-  String especialidad;
-  String ubicacion;
-  String imagen;
-
-  Especialista({
-    required this.nombre,
-    required this.especialidad,
-    required this.ubicacion,
-    required this.imagen,
-  });
 }

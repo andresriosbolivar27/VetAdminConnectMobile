@@ -22,10 +22,12 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
                 appBar: AppBar(
                   bottom: const TabBar(
                     tabs: [
-                      Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black)),
+                      Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black),),
                       Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
                       Tab(text: 'Veterinarios', icon: Icon(Icons.medical_services_outlined, color: Colors.black)),
                     ],
+                    indicatorColor: Colors.blueAccent,
+                    labelColor: Colors.blueAccent,
                   ),
                   title: const Text('Cliente'),
                 ),

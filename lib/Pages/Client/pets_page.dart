@@ -148,6 +148,7 @@ class _PetsPageState extends State<PetsPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _addButtonClicked,
         child: const Icon(Icons.add),
+        backgroundColor: Colors.blue,
       ),
     );
   }
