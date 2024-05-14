@@ -104,7 +104,6 @@ class NetworkApiService<T> extends BaseService<T> {
   ApiResponse<dynamic>  getTipoGenerico(String json) {
     final deserialized = ApiResponse.fromJson(
         Map<String, dynamic>.from(jsonDecode(json)), (json) {
-      // Assume 'UserData' class for the result based on your structure
       if (json is Map<String, dynamic>) {
         if(typeName == "TokenResult"){
           return TokenResult.empty().fromJson(json);

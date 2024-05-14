@@ -54,13 +54,17 @@ class _RegisterPageState extends State<RegisterPage> {
   final _password = TextEditingController();
   final _repPassword = TextEditingController();
   final _roleController = TextEditingController();
+  final _countryId = TextEditingController();
+  final _stateId = TextEditingController();
+  final _cityId = TextEditingController();
   bool _passwordVisible = true;
   bool _repPasswordVisible = true;
   String _birthDate = "Fecha de Nacimiento";
   Genre? _genre = Genre.male;
   String _genreSelected = 'Masculino';
   late String? _profileImagePath =
-      ''; // Ruta de la imagen de perfil seleccionada
+      '';
+  int userTypeSelected = 0;
 
   List<Country> _countries = [];
   List<Departamento> _states = [];
@@ -203,6 +207,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     country: _country,
                     state: _state,
                     city: _city,
+                    countryId: _countryId,
+                    stateId: _stateId,
+                    cityId: _cityId,
                     dialogColor: Colors.grey.shade200,
                     textFieldDecoration: const InputDecoration(
                         filled: false,
@@ -295,14 +302,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 DropdownMenu<UserType>(
                   width: dropdownWidth,
                   controller: _roleController,
-                  // requestFocusOnTap is enabled/disabled by platforms when it is null.
-                  // On mobile platforms, this is false by default. Setting this to true will
-                  // trigger focus request on the text field and virtual keyboard will appear
-                  // afterward. On desktop platforms however, this defaults to true.
                   requestFocusOnTap: true,
                   label: const Text('Tipo Usuario'),
-                  onSelected: (UserType? color) {
-                    setState(() {});
+                  onSelected: (UserType? userType) {
+                    setState(() {
+                      userTypeSelected = userType!.id;
+                    });
                   },
                   dropdownMenuEntries: UserType.values
                       .map<DropdownMenuEntry<UserType>>((UserType role) {
@@ -390,7 +395,7 @@ class _RegisterPageState extends State<RegisterPage> {
             if (_password.text == _repPassword.text) {
               //   var user = User(_name.text, _email.text, _password.text);
               //   _saveUser(user);
-              //registerUser();
+              registerUser();
               //   Navigator.pop(context);
             } else {
               showMessage("ERROR: Las contraseñas no son iguales");
@@ -401,29 +406,32 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  // Future<void> registerUser() async {
-  //   var client = Client(
-  //     _document.text,
-  //     _name.text,
-  //     _lastName.text,
-  //     _address.text,
-  //     _profileImagePath!,
-  //     _roleController.text,
-  //     _cityId.,
-  //     String userName,
-  //     String email,
-  //     String? password,
-  //     String? passwordConfirm,
-  //     String phoneNumber,
-  //     int clientId,
-  //     List<Pet> pets,
-  //   )
-  //   var result = await _accountApi.createClientApi(ata, token) ;
-  //   print('registradp');
-  //   //valido que result si es un uid osea que fue exitoso
-  //   //var user = User (result, _name.text, _email.text);
-  //   //createUser(user);
-  // }
+  Future<void> registerUser() async {
+    var client = Client(
+      '',
+      _document.text,
+      _name.text,
+      _lastName.text,
+      _address.text,
+      _profileImagePath!,
+      userTypeSelected,
+      int.parse(_cityId.text),
+      '',
+      _email.text,
+      _email.text,
+      _password.text,
+      _repPassword.text,
+      _phone.text,
+      0,
+      []
+    );
+
+    var result = await _accountApi.createClientApi(client, '') ;
+
+    if(result.wasSuccess){
+      showMessage('Su cuenta ha sido creada con éxito. Se te ha enviado un correo electrónico con las instrucciones para activar tu usuario.');
+    }
+  }
 
   Future<void> _loadCountriesAsync() async {
     if (!_countries.any((element) => false)) {

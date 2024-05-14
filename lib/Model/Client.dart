@@ -79,7 +79,7 @@ class Client extends User {
       'lastName': lastName,
       'address': address,
       'photo': photo,
-      'userType': userType.toString().split('.').last,
+      'userType': userType,
       'cityId': cityId,
       'cityName': cityName,
       'userName': userName,

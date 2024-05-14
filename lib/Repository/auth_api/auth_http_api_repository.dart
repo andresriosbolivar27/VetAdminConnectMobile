@@ -8,19 +8,24 @@ import 'package:vetadminconnectmobile/Services/network_api_services.dart';
 import 'package:vetadminconnectmobile/configs/app_url.dart';
 
 class AuthHttpApiRepository implements AuthRepository {
-  final BaseService<TokenResult> _apiServices =
-      NetworkApiService("TokenResult");
+
+
 
   @override
   Future<ApiResponse<TokenResult>> loginApi(LoginDto data, String token) async {
-    final response = await _apiServices.getPostApiResponse(
+    late BaseService<TokenResult> apiServices;
+    apiServices = NetworkApiService("TokenResult");
+     final response = await apiServices.getPostApiResponse(
         AppUrl.loginEndPoint, data.toJson(), token);
     return response;
   }
 
   @override
-  Future<ApiResponse<TokenResult>> createClientApi(Client ata, String token) async {
-    // TODO: implement CreateClientApi
-    throw UnimplementedError();
+  Future<ApiResponse<String>> createClientApi(Client data, String token) async {
+    late BaseService<String> apiServices;
+    apiServices = NetworkApiService("NewClient");
+    final response = await apiServices.getPostApiResponse(
+        AppUrl.registerApiEndPoint, data.toJson(), token);
+    return response;
   }
 }

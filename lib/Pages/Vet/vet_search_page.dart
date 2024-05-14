@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Model/PaginationDto.dart';
@@ -95,9 +97,11 @@ class _VetSearchPageState extends State<VetSearchPage> {
         itemCount: _filteredEspecialistas.length,
         itemBuilder: (context, index) {
           final veterinario = _filteredEspecialistas[index];
+          var conse = Random().nextInt(100);
+          veterinario.address = 'https://picsum.photos/200/30$conse';
           return ListTile(
-            leading: const CircleAvatar(
-              backgroundImage: NetworkImage('https://picsum.photos/200/302'),
+            leading: CircleAvatar(
+              backgroundImage: Image.network(veterinario.address).image,
             ),
             title: Text(veterinario.fullName),
             subtitle: Text(veterinario.vetSpecialities.isEmpty ? veterinario.cityName : '${veterinario.vetSpecialities.first.name} - ${veterinario.cityName}'),

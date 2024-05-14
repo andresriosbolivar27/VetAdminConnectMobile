@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -89,7 +91,7 @@ class VeterinarioDetailsPage extends StatelessWidget {
                       ),
                     ),
                     RatingBar.builder(
-                      initialRating: 4,
+                      initialRating: Random().nextDouble() * 5,
                       minRating: 1,
                       direction: Axis.horizontal,
                       allowHalfRating: false,
