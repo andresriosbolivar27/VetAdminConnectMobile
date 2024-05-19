@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vetadminconnectmobile/Pages/Client/pets_add_page.dart';
 import 'login_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -15,7 +16,7 @@ class _SplashPageState extends State<SplashPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const LoginPage(),
+          builder: (context) => const LoginPage(),//AddPetPage(1),
         )
       );
     });

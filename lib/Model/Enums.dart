@@ -24,3 +24,15 @@ Error,
 Warning,
 Information
 }
+
+final Map<GenderType, String> genderTypeTranslations = {
+  GenderType.male: 'Macho',
+  GenderType.female: 'Hembra',
+};
+
+// Mapa de traducción
+final Map<SizeType, String> sizeTypeTranslations = {
+  SizeType.small: 'Pequeño',
+  SizeType.medium: 'Mediano',
+  SizeType.large: 'Grande',
+};

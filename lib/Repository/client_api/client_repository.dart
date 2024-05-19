@@ -5,5 +5,6 @@ import 'package:vetadminconnectmobile/Model/LoginDto.dart';
 abstract class ClientRepository {
 
   Future<ApiResponse<Client>> getClient(String Id, String token);
+  Future<ApiResponse<String>> addPets(Client client, String token);
 
 }

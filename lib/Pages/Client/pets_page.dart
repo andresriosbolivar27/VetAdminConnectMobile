@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Pet.dart';
+import 'package:vetadminconnectmobile/Pages/Client/pets_add_page.dart';
 import 'package:vetadminconnectmobile/Pages/Client/pets_detail_page.dart';
 import 'package:vetadminconnectmobile/Pages/Client/pets_edit_page.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
@@ -27,7 +28,7 @@ class _PetsPageState extends State<PetsPage> {
     try {
       final clientRepository = ClientHttpApiRepository();
       final apiResponse = await clientRepository
-          .getClient('f77711ea-d38c-4311-8084-547c56b81941 ', '');
+          .getClient('2a3bc3ae-9b03-496b-9f0c-cd7ef6ee0b4b', '');
       if (apiResponse.wasSuccess) {
         setState(() {
           _client = apiResponse.result;
@@ -50,9 +51,12 @@ class _PetsPageState extends State<PetsPage> {
   }
 
   void _addButtonClicked() {
-    setState(() {
-      _showMsg("Nueva Mascota");
-    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPetPage(_client!.clientId),
+      ),
+    );
   }
 
   void _navigateToVeterinarioDetails(Pet petItem) {
@@ -94,10 +98,12 @@ class _PetsPageState extends State<PetsPage> {
                 return ListTile(
                   leading: CircleAvatar(
                     backgroundImage:
-                        NetworkImage('https://via.placeholder.com/150'),
+                        NetworkImage(
+                          petItem?.photo?.isNotEmpty == true ? petItem!.photo! : 'https://via.placeholder.com/150',
+                        ),
                   ),
                   title: Text(petItem.name),
-                  subtitle: Text(petItem.breedName),
+                  subtitle: Text(petItem.breedName!),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) {
                       switch (value) {

@@ -8,8 +8,10 @@ import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Country.dart';
 import 'package:vetadminconnectmobile/Model/Departamento.dart';
 import 'package:vetadminconnectmobile/Model/Enums.dart';
+import 'package:vetadminconnectmobile/Model/Especie.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
+import 'package:vetadminconnectmobile/Model/Raza.dart';
 import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Model/Vet.dart';
 import '../Model/Generic/app_exception.dart';
@@ -76,14 +78,16 @@ class NetworkApiService<T> extends BaseService<T> {
   @visibleForTesting
   Future<ApiResponse<T>> _handleResponse<T>(http.Response response) async {
     final responseJson = jsonDecode(response.body);
-    final value = getTipoGenerico(response.body);
+
     switch (response.statusCode) {
       case 200:
+        final value = getTipoGenerico(response.body);
         return ApiResponse.fromJson(responseJson, (p0) => value.result as T);
       case 400:
-        final objectResponse = ApiResponse.fromJson(responseJson, (p0) => null);
-        return ApiResponse<T>(wasSuccess: false, message: response.body.toString(),
-            exceptions: objectResponse.exceptions);
+        return ApiResponse<T>(wasSuccess: false, message: '',
+            exceptions: [
+              ExceptionResponse(severityException: SeverityException.Error, exception: "Error en la solicitud")
+            ]);
       case 401:
       case 403:
         return ApiResponse<T>(wasSuccess: false, message: "",
@@ -114,6 +118,12 @@ class NetworkApiService<T> extends BaseService<T> {
         if(typeName == "Country"){
           return Country.fromJson(json);
         }
+        if(typeName == "Specie"){
+          return Especie.fromJson(json);
+        }
+        if(typeName == "Breed"){
+          return Raza.fromJson(json);
+        }
       }if(json is List<dynamic>){
         if(typeName == "Country"){
           return json.map((json) => Country.fromJson(json)).toList();
@@ -126,6 +136,12 @@ class NetworkApiService<T> extends BaseService<T> {
         }
         if(typeName == "Vet"){
           return json.map((json) => Vet.fromJson(json)).toList();
+        }
+        if(typeName == "Specie"){
+          return json.map((json) => Especie.fromJson(json)).toList();
+        }
+        if(typeName == "Breed"){
+          return json.map((json) => Raza.fromJson(json)).toList();
         }
       }
       else {

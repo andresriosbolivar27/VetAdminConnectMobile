@@ -62,9 +62,10 @@ class _RegisterPageState extends State<RegisterPage> {
   String _birthDate = "Fecha de Nacimiento";
   Genre? _genre = Genre.male;
   String _genreSelected = 'Masculino';
-  late String? _profileImagePath =
-      '';
+  File? _profileImagePath;
   int userTypeSelected = 0;
+  String? _profileImageBase64;
+
 
   List<Country> _countries = [];
   List<Departamento> _states = [];
@@ -101,17 +102,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<void> _selectProfilePicture() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      setState(() {
-        _profileImagePath = pickedFile.path;
-      });
-    }
   }
 
   @override
@@ -335,7 +325,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: TextStyle(fontSize: 20),
                 ),
                 const SizedBox(height: 16.0),
-                _buildProfilePicture(),
+                CircleAvatar(
+                  radius: 60,
+                  backgroundImage:
+                  _profileImagePath != null ? FileImage(_profileImagePath!) : null,
+                  child: IconButton(
+                    icon: const Icon(Icons.camera_alt),
+                    onPressed: () {
+                      _showImagePicker(context);
+                    },
+                  ),
+                ),
+                //_buildProfilePicture(),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   style: TextButton.styleFrom(
@@ -352,30 +353,44 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildProfilePicture() {
-    return GestureDetector(
-      onTap: _selectProfilePicture,
-      child: Container(
-        width: 150,
-        height: 150,
-        decoration: BoxDecoration(
-          backgroundBlendMode: BlendMode.darken,
-          shape: BoxShape.circle,
-          color: Colors.grey[200],
-          image: _profileImagePath != null
-              ? DecorationImage(
-                  image: FileImage(File(_profileImagePath!)),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        child: _profileImagePath == null
-            ? const Center(
-                child: Icon(Icons.camera_alt, size: 100, color: Colors.black),
-              )
-            : null,
-      ),
+  Future<void> _showImagePicker(BuildContext context) async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await showModalBottomSheet<XFile>(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.camera),
+                title: const Text('Tomar foto'),
+                onTap: () async {
+                  Navigator.pop(context,
+                      await _picker.pickImage(source: ImageSource.camera));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image),
+                title: const Text('Seleccionar de galería'),
+                onTap: () async {
+                  Navigator.pop(context,
+                      await _picker.pickImage(source: ImageSource.gallery));
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
+
+    if (image != null) {
+      final File file = File(image.path);
+      setState(() {
+        _profileImagePath = file;
+        _profileImageBase64 = base64Encode(file.readAsBytesSync());
+      });
+    }
   }
 
   void _onRegisterButtonClicked() {
@@ -393,10 +408,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 "ERROR: La contraseña debe tener mas de 6 o más digitos");
           } else {
             if (_password.text == _repPassword.text) {
-              //   var user = User(_name.text, _email.text, _password.text);
-              //   _saveUser(user);
               registerUser();
-              //   Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Usuario registrado'),
+                ),
+              );
+              Navigator.pop(context);
             } else {
               showMessage("ERROR: Las contraseñas no son iguales");
             }
@@ -413,7 +431,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _name.text,
       _lastName.text,
       _address.text,
-      _profileImagePath!,
+        _profileImageBase64,
       userTypeSelected,
       int.parse(_cityId.text),
       '',
