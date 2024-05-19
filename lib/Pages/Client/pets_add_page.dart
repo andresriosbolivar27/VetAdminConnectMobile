@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
@@ -15,7 +16,8 @@ import 'package:vetadminconnectmobile/Repository/specie_api/specie_http_api_repo
 
 class AddPetPage extends StatefulWidget {
   final int _clientId;
-  const AddPetPage(this._clientId, {super.key});
+  AddPetPage(this._clientId, {super.key});
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   State<AddPetPage> createState() => _AddPetPageState();
@@ -99,113 +101,129 @@ class _AddPetPageState extends State<AddPetPage> {
       body: SingleChildScrollView(
           child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundImage:
-                  _imageFile != null ? FileImage(_imageFile!) : null,
-              child: IconButton(
-                icon: const Icon(Icons.camera_alt),
-                onPressed: () {
-                  _showImagePicker(context);
+        child: Form(
+          key: widget._formKey,
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundImage:
+                _imageFile != null ? FileImage(_imageFile!) : null,
+                child: IconButton(
+                  icon: const Icon(Icons.camera_alt),
+                  onPressed: () {
+                    _showImagePicker(context);
+                  },
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de la mascota',
+                  helperText: 'Campo obligatorio',
+                ),
+                keyboardType: TextInputType.text,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) => validatePetName(_nameController.text.trim())! ? null : 'Debe ingresar el nombre de la mascota',
+              ),
+              const SizedBox(height: 20.0),
+              TextFormField(
+                controller: _ageController,
+                decoration: const InputDecoration(
+                  labelText: 'Edad de la mascota',
+                  helperText: 'Campo obligatorio',
+                ),
+                keyboardType: TextInputType.number,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) => validatePetAge(_ageController.text.trim()) ? null : 'Debe ingresar la edad de la mascota',
+              ),
+              const SizedBox(height: 20.0),
+              DropdownButtonFormField<GenderType>(
+                value: _selectedGender,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedGender = newValue!;
+                  });
+                },
+                items: GenderType.values.map((size) {
+                  return DropdownMenuItem<GenderType>(
+                    value: size,
+                    child: Text(genderTypeTranslations[size]!),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Género',
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              DropdownButtonFormField<Especie>(
+                value: _selectedSpecie,
+                hint: const Text('Seleccione una Especie'),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) => validatePetSpecie()! ? null : 'Debe Seleccionar la especie de la mascota',
+                items: especies.map((especie) {
+                  return DropdownMenuItem(
+                    value: especie,
+                    child: Text(especie.name),
+                  );
+                }).toList(),
+                onChanged: (especie) {
+                  setState(() {
+                    _selectedSpecie = especie;
+                    if(especie != null){
+                      _fetchRazasForSpecie(especie.id);
+                    }
+                  });
                 },
               ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nombre de la mascota',
+              const SizedBox(height: 20.0),
+              DropdownButtonFormField<Raza>(
+                value: _selectedBreed,
+                hint: const Text('Seleccione una Raza'),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) => validatePetBreed()! ? null : 'Debe Seleccionar la raza de la mascota',
+                items: razasFilter.map((raza) {
+                  return DropdownMenuItem<Raza>(
+                    value: raza,
+                    child: Text(raza.name),
+                  );
+                }).toList(),
+                onChanged: (selectedRaza) {
+                  setState(() {
+                    _selectedBreed = selectedRaza!;
+                  });
+                },
               ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
-              controller: _ageController,
-              decoration: const InputDecoration(
-                labelText: 'Edad de la mascota',
+              const SizedBox(height: 20.0),
+              DropdownButtonFormField<SizeType>(
+                value: _selectedSize,
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedSize = newValue!;
+                  });
+                },
+                items: SizeType.values.map((size) {
+                  return DropdownMenuItem<SizeType>(
+                    value: size,
+                    child: Text(sizeTypeTranslations[size]!),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  labelText: 'Tamaño',
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20.0),
-            DropdownButtonFormField<GenderType>(
-              value: _selectedGender,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedGender = newValue!;
-                });
-              },
-              items: GenderType.values.map((size) {
-                return DropdownMenuItem<GenderType>(
-                  value: size,
-                  child: Text(genderTypeTranslations[size]!),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                labelText: 'Género',
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            DropdownButtonFormField<Especie>(
-              value: _selectedSpecie,
-              hint: const Text('Seleccione una Especie'),
-              items: especies.map((especie) {
-                return DropdownMenuItem(
-                  value: especie,
-                  child: Text(especie.name),
-                );
-              }).toList(),
-              onChanged: (especie) {
-                setState(() {
-                  _selectedSpecie = especie;
-                  if(especie != null){
-                    _fetchRazasForSpecie(especie.id);
+              const SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () async {
+                  if (widget._formKey.currentState!.validate()) {
+                    await _addPet();
                   }
-                });
-              },
-            ),
-            const SizedBox(height: 20.0),
-            DropdownButtonFormField<Raza>(
-              value: _selectedBreed,
-              hint: const Text('Seleccione una Raza'),
-              items: razasFilter.map((raza) {
-                return DropdownMenuItem<Raza>(
-                  value: raza,
-                  child: Text(raza.name),
-                );
-              }).toList(),
-              onChanged: (selectedRaza) {
-                setState(() {
-                  _selectedBreed = selectedRaza!;
-                });
-              },
-            ),
-            const SizedBox(height: 20.0),
-            DropdownButtonFormField<SizeType>(
-              value: _selectedSize,
-              onChanged: (newValue) {
-                setState(() {
-                  _selectedSize = newValue!;
-                });
-              },
-              items: SizeType.values.map((size) {
-                return DropdownMenuItem<SizeType>(
-                  value: size,
-                  child: Text(sizeTypeTranslations[size]!),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                labelText: 'Tamaño',
+                },
+                child: const Text('Agregar Mascota'),
               ),
-            ),
-            const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: () async {
-                await _addPet();
-              },
-              child: const Text('Agregar Mascota'),
-            ),
-          ],
+            ],
+          ),
         ),
       )),
     );
@@ -258,8 +276,9 @@ class _AddPetPageState extends State<AddPetPage> {
     final GenderType petGenderType = _selectedGender;
     final int petSpecieId = _selectedSpecie!.id;
     final int petBreedId = _selectedBreed!.id;
-    String? petImage;
     final SizeType petSize = _selectedSize;
+    String? petImage;
+
 
     if(_imageFile != null){
       petImage = base64Encode(_imageFile!.readAsBytesSync());
@@ -306,7 +325,7 @@ class _AddPetPageState extends State<AddPetPage> {
           content: Text('Mascota registrada'),
         ),
       );
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     }
 
     if(!result.wasSuccess){
@@ -316,5 +335,36 @@ class _AddPetPageState extends State<AddPetPage> {
         ),
       );
     }
+  }
+
+  bool? validatePetName(String? value) {
+    if (value!.isEmpty == true) {
+      return false;
+    }
+    return true;
+  }
+
+  bool validatePetAge(String? value) {
+    if (value!.isEmpty == true) {
+      return false;
+    }
+    final int age = int.tryParse(value) ?? 0;if (age <= 0) {
+      return false;
+    }
+    return true;
+  }
+
+  bool? validatePetSpecie() {
+    if (_selectedSpecie == null || _selectedSpecie!.name.isEmpty == true) {
+      return false;
+    }
+    return true;
+  }
+
+  bool? validatePetBreed() {
+    if (_selectedBreed == null || _selectedBreed!.name.isEmpty == true) {
+      return false;
+    }
+    return true;
   }
 }

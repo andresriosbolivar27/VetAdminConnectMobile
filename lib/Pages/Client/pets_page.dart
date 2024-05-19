@@ -17,11 +17,12 @@ class _PetsPageState extends State<PetsPage> {
   Client? _client;
   final _searchController = TextEditingController();
   List<Pet> _filteredPets = [];
+  Future<void>? _fetchClientDataFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchClientData();
+    _fetchClientDataFuture = _fetchClientData();
   }
 
   Future<void> _fetchClientData() async {
@@ -50,16 +51,21 @@ class _PetsPageState extends State<PetsPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void _addButtonClicked() {
-    Navigator.push(
+  void _addButtonClicked() async {
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AddPetPage(_client!.clientId),
       ),
     );
+    if (result != null && result) {
+      setState(() {
+        _fetchClientDataFuture = _fetchClientData();
+      });
+    }
   }
 
-  void _navigateToVeterinarioDetails(Pet petItem) {
+  void _navigateToVeterinarioDetails(Pet petItem) async {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -72,7 +78,7 @@ class _PetsPageState extends State<PetsPage> {
     setState(() {
       _filteredPets = _client!.pets
           .where((pet) =>
-              pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
+          pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
           .toList();
     });
   }
@@ -83,24 +89,37 @@ class _PetsPageState extends State<PetsPage> {
       appBar: AppBar(
         title: TextField(
           controller: _searchController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Buscar mascota...',
             suffixIcon: Icon(Icons.search),
           ),
           onChanged: _filterPets,
         ),
       ),
-      body: _client != null && _client!.pets.isNotEmpty
-          ? ListView.builder(
+      body: FutureBuilder<void>(
+        future: _fetchClientDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else {
+            return _client != null && _client!.pets.isNotEmpty
+                ? ListView.builder(
               itemCount: _filteredPets.length,
               itemBuilder: (context, index) {
                 final petItem = _filteredPets[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundImage:
-                        NetworkImage(
-                          petItem?.photo?.isNotEmpty == true ? petItem!.photo! : 'https://via.placeholder.com/150',
-                        ),
+                    backgroundImage: NetworkImage(
+                      petItem?.photo?.isNotEmpty == true
+                          ? petItem!.photo!
+                          : 'https://via.placeholder.com/150',
+                    ),
                   ),
                   title: Text(petItem.name),
                   subtitle: Text(petItem.breedName!),
@@ -111,7 +130,8 @@ class _PetsPageState extends State<PetsPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => EditPetPage(pet: petItem),
+                              builder: (context) =>
+                                  EditPetPage(pet: petItem),
                             ),
                           );
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -148,9 +168,12 @@ class _PetsPageState extends State<PetsPage> {
                 );
               },
             )
-          : const Center(
+                : const Center(
               child: CircularProgressIndicator(),
-            ),
+            );
+          }
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addButtonClicked,
         child: const Icon(Icons.add),
