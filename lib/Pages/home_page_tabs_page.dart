@@ -23,8 +23,8 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
                   bottom: const TabBar(
                     tabs: [
                       Tab(text: 'Mascotas', icon: Icon(Icons.pets_outlined, color: Colors.black),),
-                      Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
                       Tab(text: 'Veterinarios', icon: Icon(Icons.medical_services_outlined, color: Colors.black)),
+                      Tab(text: 'Perfil', icon: Icon(Icons.person_2_outlined, color: Colors.black)),
                     ],
                     indicatorColor: Colors.blueAccent,
                     labelColor: Colors.blueAccent,
@@ -34,8 +34,8 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
                 body: const TabBarView(
                   children: [
                     PetsPage(),
-                    ProfilePage(),
                     VetSearchPage(),
+                    UserProfilePage(),
                   ],
                 )
             )

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vetadminconnectmobile/Pages/login_page.dart';
+import 'package:vetadminconnectmobile/Pages/profile_page.dart';
 import 'package:vetadminconnectmobile/pages/splash_page.dart';
 
 
@@ -29,6 +31,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const SplashPage(),
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/userProfile': (context) => const UserProfilePage(),
+      },
     );
   }
 }

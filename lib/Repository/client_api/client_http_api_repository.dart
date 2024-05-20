@@ -24,4 +24,13 @@ class ClientHttpApiRepository implements ClientRepository {
         AppUrl.addPetsApiEndPoint, client.toJson(), token);
     return response;
   }
+
+  @override
+  Future<ApiResponse<String>> editPets(Client client, String token) async{
+    final BaseService<String> apiServices;
+    apiServices = NetworkApiService("EditPets");
+    final response = await apiServices.getPostApiResponse(
+        AppUrl.addPetsApiEndPoint, client.toJson(), token);
+    return response;
+  }
 }

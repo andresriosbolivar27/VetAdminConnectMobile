@@ -298,24 +298,9 @@ class _AddPetPageState extends State<AddPetPage> {
       )
     ];
 
-    Client client = Client(
-      '',
-      '',
-      '',
-      '',
-      '',
-      null,
-      0,
-      0,
-      '',
-      '',
-      '',
-      '',
-      '',
-      '',
-      widget._clientId,
-      pets,
-    );
+    Client client = Client.empty();
+    client.clientId = widget._clientId;
+    client.pets = pets;
 
     var result = await _clientApi.addPets(client, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW52ZXRAeW9wbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsIkRvY3VtZW50IjoiMTAxMCIsIkZpcnN0TmFtZSI6IkFkbWluIiwiTGFzdE5hbWUiOiJWZXRBZG1pbkNvbm5lY3QiLCJBZGRyZXNzIjoiQ2FsbGUgMjQiLCJQaG90byI6IiIsIkNpdHlJZCI6IjEiLCJVc2VySWQiOiIxOTI3MDgxZS1jMWFlLTRiYTctODAzZS0zNzY5MDE3NWNlNzEiLCJleHAiOjE3MTg2ODAwMzV9.jeiGN3aWjb-232MB2nsBQaFfzvq6ZU_QISfgJCeNnXY') ;
 

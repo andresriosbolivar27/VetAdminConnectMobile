@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
+import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Pet.dart';
 import 'package:vetadminconnectmobile/Pages/Client/pets_add_page.dart';
 import 'package:vetadminconnectmobile/Pages/Client/pets_detail_page.dart';
 import 'package:vetadminconnectmobile/Pages/Client/pets_edit_page.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 class PetsPage extends StatefulWidget {
   const PetsPage({Key? key}) : super(key: key);
@@ -18,6 +20,7 @@ class _PetsPageState extends State<PetsPage> {
   final _searchController = TextEditingController();
   List<Pet> _filteredPets = [];
   Future<void>? _fetchClientDataFuture;
+  final TokenService _tokenService = TokenService();
 
   @override
   void initState() {
@@ -28,10 +31,17 @@ class _PetsPageState extends State<PetsPage> {
   Future<void> _fetchClientData() async {
     try {
       final clientRepository = ClientHttpApiRepository();
-      final apiResponse = await clientRepository
-          .getClient('2a3bc3ae-9b03-496b-9f0c-cd7ef6ee0b4b', '');
+      var token = await _tokenService.getTokenData('token');
+      String? userId = token['UserId'] as String;
+      final ApiResponse<Client> apiResponse;
+
+      apiResponse = await clientRepository.getClient(
+          userId, '');
+
       if (apiResponse.wasSuccess) {
         setState(() {
+          userId = null;
+          token = {};
           _client = apiResponse.result;
           _filteredPets = _client!.pets;
         });
@@ -78,7 +88,7 @@ class _PetsPageState extends State<PetsPage> {
     setState(() {
       _filteredPets = _client!.pets
           .where((pet) =>
-          pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
+              pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
           .toList();
     });
   }
@@ -110,67 +120,67 @@ class _PetsPageState extends State<PetsPage> {
           } else {
             return _client != null && _client!.pets.isNotEmpty
                 ? ListView.builder(
-              itemCount: _filteredPets.length,
-              itemBuilder: (context, index) {
-                final petItem = _filteredPets[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      petItem?.photo?.isNotEmpty == true
-                          ? petItem!.photo!
-                          : 'https://via.placeholder.com/150',
-                    ),
-                  ),
-                  title: Text(petItem.name),
-                  subtitle: Text(petItem.breedName!),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'Editar':
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  EditPetPage(pet: petItem),
-                            ),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Editando ${petItem.name}'),
-                            ),
-                          );
-                          break;
-                        case 'Eliminar':
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Eliminado ${petItem.name}'),
-                            ),
-                          );
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) {
-                      return [
-                        const PopupMenuItem<String>(
-                          value: 'Editar',
-                          child: Text('Editar'),
+                    itemCount: _filteredPets.length,
+                    itemBuilder: (context, index) {
+                      final petItem = _filteredPets[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            petItem?.photo?.isNotEmpty == true
+                                ? petItem!.photo!
+                                : 'https://via.placeholder.com/150',
+                          ),
                         ),
-                        const PopupMenuItem<String>(
-                          value: 'Eliminar',
-                          child: Text('Eliminar'),
+                        title: Text(petItem.name),
+                        subtitle: Text(petItem.breedName!),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            switch (value) {
+                              case 'Editar':
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        EditPetPage(pet: petItem),
+                                  ),
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Editando ${petItem.name}'),
+                                  ),
+                                );
+                                break;
+                              case 'Eliminar':
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Eliminado ${petItem.name}'),
+                                  ),
+                                );
+                                break;
+                            }
+                          },
+                          itemBuilder: (context) {
+                            return [
+                              const PopupMenuItem<String>(
+                                value: 'Editar',
+                                child: Text('Editar'),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Eliminar',
+                                child: Text('Eliminar'),
+                              ),
+                            ];
+                          },
                         ),
-                      ];
+                        onTap: () {
+                          _navigateToVeterinarioDetails(petItem);
+                        },
+                      );
                     },
-                  ),
-                  onTap: () {
-                    _navigateToVeterinarioDetails(petItem);
-                  },
-                );
-              },
-            )
+                  )
                 : const Center(
-              child: CircularProgressIndicator(),
-            );
+                    child: CircularProgressIndicator(),
+                  );
           }
         },
       ),

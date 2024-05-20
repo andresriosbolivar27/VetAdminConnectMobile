@@ -2,7 +2,7 @@
 
 class AppUrl {
   //static var baseUrl = 'https://vetadminconnectbackend.azurewebsites.net' ;
-  static var baseUrl = 'http://192.168.10.15:82' ;
+  static var baseUrl = 'http://192.168.155.222:82' ;
 
   //Account
   static var loginEndPoint =  '$baseUrl/api/accounts/login' ;
@@ -24,6 +24,7 @@ class AppUrl {
 
   //Pets
   static var addPetsApiEndPoint =  '$baseUrl/api/pets/createpet';
+  static var ediPetsApiEndPoint =  '$baseUrl/api/pets/editpet';
 
   //Specie
   static var getSpecieComboEndpoint = '$baseUrl/api/Species/combo/';

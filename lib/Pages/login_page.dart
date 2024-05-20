@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/app_exception.dart';
 import 'package:vetadminconnectmobile/Model/LoginDto.dart';
@@ -10,6 +9,7 @@ import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Pages/register_page.dart';
 import 'package:vetadminconnectmobile/Repository/auth_api/auth_http_api_repository.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 import '../Model/User.dart';
 import 'home_page_tabs_page.dart';
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
 
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _authApiRepository = AuthHttpApiRepository();
+  final TokenService _tokenService = TokenService();
   late Map<String, dynamic> decodedToken;
   bool _passwordVisible = true;
   User userLoaded = User.empty();
@@ -46,23 +46,29 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       try{
         LoginDto loginDto = LoginDto(email: _email.text, password: _password.text);
-        final result = await _authApiRepository.loginApi(loginDto, '');
+        final result = await _tokenService.loginAndSaveToken(loginDto, context);
         if (!result.wasSuccess) {
           _showMsg(result.exceptions!.first.exception);
         } else if(result.wasSuccess){
           print('token');
           decodedToken = JwtDecoder.decode(result.result!.token);
-          print('Email: ${decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']}');
-          print('Rol: ${decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']}');
-          print('Documento: ${decodedToken['Document']}');
-          print('Nombre: ${decodedToken['FirstName']} ${decodedToken['LastName']}');
-          print('Dirección: ${decodedToken['Address']}');
-          print('Ciudad ID: ${decodedToken['CityId']}');
-          print('ID de usuario: ${decodedToken['UserId']}');
-          print('Fecha de expiración: ${DateTime.fromMillisecondsSinceEpoch(decodedToken['exp'] * 1000)}'); // Convert exp timestamp to DateTime
-          _showMsg("Bienvenido");
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
+          await _tokenService.saveSecureData(decodedToken, 'token');
+          var role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as String;
+          // print('Email: ${decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']}');
+          // print('Rol: ${decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']}');
+          // print('Documento: ${decodedToken['Document']}');
+          // print('Nombre: ${decodedToken['FirstName']} ${decodedToken['LastName']}');
+          // print('Dirección: ${decodedToken['Address']}');
+          // print('Ciudad ID: ${decodedToken['CityId']}');
+          // print('ID de usuario: ${decodedToken['UserId']}');
+          // print('Fecha de expiración: ${DateTime.fromMillisecondsSinceEpoch(decodedToken['exp'] * 1000)}'); // Convert exp timestamp to DateTime
+
+          if(role == 'Client' || role == 'vet'){
+            _showMsg("Bienvenido");
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));
+          }
+          _showMsg("Usuario sin permiso de acceso");
         }
       }on SocketException catch(e) {
         _showMsg(e.toString());

@@ -25,7 +25,7 @@ class PetDetailsPage extends StatelessWidget {
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: Image.network(
-                  'https://media.istockphoto.com/id/1499919152/es/foto/retrato-lindo-perro-cachorro-shiba-inu-mirando-a-la-c%C3%A1mara-sonriendo-aislado-sobre-fondo-azul.jpg?s=1024x1024&w=is&k=20&c=gRaWo1lj8EROHBFj2LZGY16HGx_2Nfz023YWt5ah1uU=',
+                    pet.photo != null && pet.photo!.isNotEmpty ? pet.photo! : 'https://via.placeholder.com/200',
                   fit: BoxFit.cover,
                   height: 200,
                 ),
@@ -35,7 +35,6 @@ class PetDetailsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Pet name with bigger font and accent color
                     Text(
                       pet.name,
                       style: const TextStyle(
@@ -45,7 +44,6 @@ class PetDetailsPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Details section with icons and better spacing
                     Row(
                       children: [
                         const Icon(Icons.calendar_today_outlined, size: 16),
