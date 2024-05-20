@@ -30,7 +30,7 @@ class ClientHttpApiRepository implements ClientRepository {
     final BaseService<String> apiServices;
     apiServices = NetworkApiService("EditPets");
     final response = await apiServices.getPostApiResponse(
-        AppUrl.addPetsApiEndPoint, client.toJson(), token);
+        AppUrl.ediPetsApiEndPoint, client.toJson(), token);
     return response;
   }
 }

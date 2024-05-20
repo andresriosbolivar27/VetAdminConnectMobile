@@ -10,9 +10,11 @@ import 'package:vetadminconnectmobile/Model/Especie.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Pet.dart';
 import 'package:vetadminconnectmobile/Model/Raza.dart';
+import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Repository/breed_api/breed_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/specie_api/specie_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 class AddPetPage extends StatefulWidget {
   final int _clientId;
@@ -27,6 +29,7 @@ class _AddPetPageState extends State<AddPetPage> {
   final _clientApi = ClientHttpApiRepository();
   final _speciesApi = SpecieHttpApiRepository();
   final _breedsApi = BreedHttpApiRepository();
+  final TokenService _tokenService = TokenService();
 
   late TextEditingController _nameController;
   late TextEditingController _ageController;
@@ -302,9 +305,11 @@ class _AddPetPageState extends State<AddPetPage> {
     client.clientId = widget._clientId;
     client.pets = pets;
 
-    var result = await _clientApi.addPets(client, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiYWRtaW52ZXRAeW9wbWFpbC5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsIkRvY3VtZW50IjoiMTAxMCIsIkZpcnN0TmFtZSI6IkFkbWluIiwiTGFzdE5hbWUiOiJWZXRBZG1pbkNvbm5lY3QiLCJBZGRyZXNzIjoiQ2FsbGUgMjQiLCJQaG90byI6IiIsIkNpdHlJZCI6IjEiLCJVc2VySWQiOiIxOTI3MDgxZS1jMWFlLTRiYTctODAzZS0zNzY5MDE3NWNlNzEiLCJleHAiOjE3MTg2ODAwMzV9.jeiGN3aWjb-232MB2nsBQaFfzvq6ZU_QISfgJCeNnXY') ;
+    var token = await _tokenService.getTokenData('token');
+    var result = await _clientApi.addPets(client, token['token']) ;
 
     if(result.wasSuccess){
+      token.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mascota registrada'),

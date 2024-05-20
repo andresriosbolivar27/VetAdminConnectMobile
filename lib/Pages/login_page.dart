@@ -50,9 +50,9 @@ class _LoginPageState extends State<LoginPage> {
         if (!result.wasSuccess) {
           _showMsg(result.exceptions!.first.exception);
         } else if(result.wasSuccess){
-          print('token');
           decodedToken = JwtDecoder.decode(result.result!.token);
-          await _tokenService.saveSecureData(decodedToken, 'token');
+          await _tokenService.saveSecureData(decodedToken, 'decodedToken');
+          await _tokenService.saveSecureData(result.result!.toJson(), 'token');
           var role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as String;
           // print('Email: ${decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']}');
           // print('Rol: ${decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']}');

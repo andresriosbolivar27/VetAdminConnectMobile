@@ -28,71 +28,6 @@ class _PetsPageState extends State<PetsPage> {
     _fetchClientDataFuture = _fetchClientData();
   }
 
-  Future<void> _fetchClientData() async {
-    try {
-      final clientRepository = ClientHttpApiRepository();
-      var token = await _tokenService.getTokenData('token');
-      String? userId = token['UserId'] as String;
-      final ApiResponse<Client> apiResponse;
-
-      apiResponse = await clientRepository.getClient(
-          userId, '');
-
-      if (apiResponse.wasSuccess) {
-        setState(() {
-          userId = null;
-          token = {};
-          _client = apiResponse.result;
-          _filteredPets = _client!.pets;
-        });
-      } else {
-        _showMsg(apiResponse.exceptions!.first.exception ??
-            "Error fetching client data");
-      }
-    } catch (error) {
-      _showMsg("Error: $error");
-    }
-  }
-
-  void _showMsg(String msg) {
-    SnackBar snackBar = SnackBar(
-      content: Text(msg),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  void _addButtonClicked() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddPetPage(_client!.clientId),
-      ),
-    );
-    if (result != null && result) {
-      setState(() {
-        _fetchClientDataFuture = _fetchClientData();
-      });
-    }
-  }
-
-  void _navigateToVeterinarioDetails(Pet petItem) async {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PetDetailsPage(pet: petItem),
-      ),
-    );
-  }
-
-  void _filterPets(String searchTerm) {
-    setState(() {
-      _filteredPets = _client!.pets
-          .where((pet) =>
-              pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
-          .toList();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,18 +72,7 @@ class _PetsPageState extends State<PetsPage> {
                           onSelected: (value) {
                             switch (value) {
                               case 'Editar':
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        EditPetPage(pet: petItem),
-                                  ),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Editando ${petItem.name}'),
-                                  ),
-                                );
+                                _editButtonClicked(petItem);
                                 break;
                               case 'Eliminar':
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -190,5 +114,84 @@ class _PetsPageState extends State<PetsPage> {
         backgroundColor: Colors.blue,
       ),
     );
+  }
+
+  Future<void> _fetchClientData() async {
+    try {
+      final clientRepository = ClientHttpApiRepository();
+      var token = await _tokenService.getTokenData('decodedToken');
+      String? userId = token['UserId'] as String;
+      final ApiResponse<Client> apiResponse;
+
+      apiResponse = await clientRepository.getClient(
+          userId, '');
+
+      if (apiResponse.wasSuccess) {
+        setState(() {
+          userId = null;
+          token = {};
+          _client = apiResponse.result;
+          _filteredPets = _client!.pets;
+        });
+      } else {
+        _showMsg(apiResponse.exceptions!.first.exception ??
+            "Error fetching client data");
+      }
+    } catch (error) {
+      _showMsg("Error: $error");
+    }
+  }
+
+  void _showMsg(String msg) {
+    SnackBar snackBar = SnackBar(
+      content: Text(msg),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _addButtonClicked() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddPetPage(_client!.clientId),
+      ),
+    );
+    if (result != null && result) {
+      setState(() {
+        _fetchClientDataFuture = _fetchClientData();
+      });
+    }
+  }
+
+  void _editButtonClicked(Pet pet) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditPetPage(pet: pet),
+      ),
+    );
+    if (result != null && result) {
+      setState(() {
+        _fetchClientDataFuture = _fetchClientData();
+      });
+    }
+  }
+
+  void _navigateToVeterinarioDetails(Pet petItem) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PetDetailsPage(pet: petItem),
+      ),
+    );
+  }
+
+  void _filterPets(String searchTerm) {
+    setState(() {
+      _filteredPets = _client!.pets
+          .where((pet) =>
+          pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
+          .toList();
+    });
   }
 }

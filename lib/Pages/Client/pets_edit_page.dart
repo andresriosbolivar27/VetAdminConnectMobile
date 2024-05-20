@@ -13,6 +13,7 @@ import 'package:vetadminconnectmobile/Model/Raza.dart';
 import 'package:vetadminconnectmobile/Repository/breed_api/breed_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/specie_api/specie_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 class EditPetPage extends StatefulWidget {
   final Pet pet;
@@ -27,6 +28,7 @@ class _EditPetPageState extends State<EditPetPage> {
   final _clientApi = ClientHttpApiRepository();
   final _speciesApi = SpecieHttpApiRepository();
   final _breedsApi = BreedHttpApiRepository();
+  final TokenService _tokenService = TokenService();
 
   late TextEditingController _nameController;
   late TextEditingController _ageController;
@@ -35,6 +37,7 @@ class _EditPetPageState extends State<EditPetPage> {
   late Raza? _selectedBreed = null;
   late SizeType _selectedSize;
   File? _imageFile;
+  File? _imageCloudFile;
   String? _profileImageBase64;
   get clientId => this.clientId;
   List<Especie> especies = [];
@@ -81,11 +84,12 @@ class _EditPetPageState extends State<EditPetPage> {
     _selectedGender = GenderType.values[widget.pet.genderType];
     _selectedSize = SizeType.values[widget.pet.sizeType];
     if(widget.pet.photo != null && widget.pet.photo!.isNotEmpty){
-      _imageFile = File(widget.pet.photo!);
+      _imageCloudFile = File(widget.pet.photo!);
     }
 
     _loadData();
     _loadData2();
+
   }
 
   Future<void> _loadData2() async {
@@ -120,7 +124,7 @@ class _EditPetPageState extends State<EditPetPage> {
             children: [
               CircleAvatar(
                 radius: 60,
-                backgroundImage: _imageFile != null && _imageFile!.path.isNotEmpty ? NetworkImage(_imageFile!.path) : null,
+                backgroundImage: _loadImage(),
                 child: IconButton(
                   icon: const Icon(Icons.camera_alt),
                   onPressed: () {
@@ -304,20 +308,42 @@ class _EditPetPageState extends State<EditPetPage> {
       petImage = base64Encode(_imageFile!.readAsBytesSync());
     }
 
-    // Aquí necesitarías enviar una solicitud para editar la mascota con los nuevos datos
-    // Podrías usar la misma lógica que en _addPet para enviar la solicitud al servidor
+    List<Pet> pets = [
+      Pet(
+        id: widget.pet.id,
+        name: petName,
+        age: petAge,
+        genderType: petGenderType.index,
+        specieId: petSpecieId,
+        breedId: petBreedId,
+        photo: petImage,
+        sizeType: petSize.index,
+      )
+    ];
 
-    // Por ahora, simplemente imprimimos los datos para verificar
-    print('Nombre de la mascota: $petName');
-    print('Edad de la mascota: $petAge');
-    print('Género: ${petGenderType.toString()}');
-    print('Especie: ${_selectedSpecie!.name}');
-    print('Raza: ${_selectedBreed!.name}');
-    print('Tamaño: ${petSize.toString()}');
-    print('Imagen: $petImage');
+    Client client = Client.empty();
+    client.pets = pets;
 
-    // Si se realiza con éxito, puedes cerrar la página
-    Navigator.pop(context);
+    var token = await _tokenService.getTokenData('token');
+    var result = await _clientApi.editPets(client, token['token']) ;
+
+    if(result.wasSuccess){
+      token.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Mascota Actualizada'),
+        ),
+      );
+      Navigator.pop(context, true);
+    }
+
+    if(!result.wasSuccess){
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al editar mascota'),
+        ),
+      );
+    }
   }
 
   bool? validatePetName(String? value) {
@@ -350,5 +376,20 @@ class _EditPetPageState extends State<EditPetPage> {
       return false;
     }
     return true;
+  }
+
+  ImageProvider<Object>? _loadImage() {
+    ImageProvider<Object>? image;
+    setState(() {
+      if (_imageFile != null) {
+        image = FileImage(_imageFile!);
+      } else if (_imageCloudFile != null) {
+        image = NetworkImage(_imageCloudFile!.path);
+      } else {
+        image = null;
+      }
+    });
+
+    return image;
   }
 }
