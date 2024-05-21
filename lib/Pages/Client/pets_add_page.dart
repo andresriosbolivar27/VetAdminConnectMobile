@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Enums.dart';
@@ -265,11 +266,23 @@ class _AddPetPageState extends State<AddPetPage> {
 
     if (image != null) {
       final File file = File(image.path);
+      final compressedImage = await _compressImage(image);
       setState(() {
-        _imageFile = file;
-        _profileImageBase64 = base64Encode(file.readAsBytesSync());
+        _imageFile = compressedImage;
       });
     }
+  }
+
+  Future<File?> _compressImage(XFile imageFile) async {
+    final imagePath = imageFile.path;
+    final compresedFIle = File(imagePath);
+    final picture = await FlutterImageCompress.compressWithFile(
+      imagePath,
+      quality:70, // Adjust quality as needed (lower = smaller size)
+    );
+
+    await compresedFIle.writeAsBytes(picture!);
+    return compresedFIle;
   }
 
   Future<void> _addPet() async {

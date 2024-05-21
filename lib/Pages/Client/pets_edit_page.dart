@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -287,11 +288,23 @@ class _EditPetPageState extends State<EditPetPage> {
     );
 
     if (image != null) {
-      final File file = File(image.path);
+      final compressedImage = await _compressImage(image);
       setState(() {
-        _imageFile = file;
+        _imageFile = compressedImage;
       });
     }
+  }
+
+  Future<File?> _compressImage(XFile imageFile) async {
+    final imagePath = imageFile.path;
+    final compresedFIle = File(imagePath);
+    final picture = await FlutterImageCompress.compressWithFile(
+      imagePath,
+      quality:40, // Adjust quality as needed (lower = smaller size)
+    );
+
+    await compresedFIle.writeAsBytes(picture!);
+    return compresedFIle;
   }
 
   Future<void> _editPet() async {
