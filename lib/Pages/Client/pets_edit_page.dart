@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
+import 'dart:ui';
+import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -38,7 +40,7 @@ class _EditPetPageState extends State<EditPetPage> {
   late SizeType _selectedSize;
   File? _imageFile;
   File? _imageCloudFile;
-  String? _profileImageBase64;
+  String? _imageCloudFileBase64;
   get clientId => this.clientId;
   List<Especie> especies = [];
   List<Especie> especiesFilter = [];
@@ -83,13 +85,11 @@ class _EditPetPageState extends State<EditPetPage> {
     _ageController = TextEditingController(text: widget.pet.age.toString());
     _selectedGender = GenderType.values[widget.pet.genderType];
     _selectedSize = SizeType.values[widget.pet.sizeType];
-    if(widget.pet.photo != null && widget.pet.photo!.isNotEmpty){
+    if (widget.pet.photo != null && widget.pet.photo!.isNotEmpty) {
       _imageCloudFile = File(widget.pet.photo!);
+      _loadImageFromNetwork();
     }
-
     _loadData();
-    _loadData2();
-
   }
 
   Future<void> _loadData2() async {
@@ -98,6 +98,7 @@ class _EditPetPageState extends State<EditPetPage> {
       setState(() {
         razas = fetchedBreeds.result!;
         _selectedBreed = razas.firstWhere((e) => e.id == widget.pet.breedId);
+        _loadData2();
       });
     }
   }
@@ -289,7 +290,6 @@ class _EditPetPageState extends State<EditPetPage> {
       final File file = File(image.path);
       setState(() {
         _imageFile = file;
-        _profileImageBase64 = base64Encode(file.readAsBytesSync());
       });
     }
   }
@@ -303,9 +303,18 @@ class _EditPetPageState extends State<EditPetPage> {
     final int petBreedId = _selectedBreed!.id;
     final SizeType petSize = _selectedSize;
     String? petImage;
+    File fileImage;
 
     if (_imageFile != null) {
       petImage = base64Encode(_imageFile!.readAsBytesSync());
+    }
+
+    if (_imageFile != null) {
+      petImage = base64Encode(_imageFile!.readAsBytesSync());
+    } else if (_imageCloudFile != null) {
+      petImage = _imageCloudFileBase64;
+    } else {
+      petImage = null;
     }
 
     List<Pet> pets = [
@@ -325,9 +334,9 @@ class _EditPetPageState extends State<EditPetPage> {
     client.pets = pets;
 
     var token = await _tokenService.getTokenData('token');
-    var result = await _clientApi.editPets(client, token['token']) ;
+    var result = await _clientApi.editPets(client, token['token']);
 
-    if(result.wasSuccess){
+    if (result.wasSuccess) {
       token.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -337,7 +346,7 @@ class _EditPetPageState extends State<EditPetPage> {
       Navigator.pop(context, true);
     }
 
-    if(!result.wasSuccess){
+    if (!result.wasSuccess) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error al editar mascota'),
@@ -391,5 +400,20 @@ class _EditPetPageState extends State<EditPetPage> {
     });
 
     return image;
+  }
+
+  Future<void> _loadImageFromNetwork() async {
+    try {
+      http.Response response = await http.get(Uri.parse(widget.pet.photo!));
+      if (response.statusCode == 200) {
+        final Uint8List bytes = response.bodyBytes;
+          _imageCloudFileBase64 = base64Encode(bytes);
+      } else {
+        print(
+            'Error al cargar la imagen desde la nube: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al cargar la imagen desde la nube: $e');
+    }
   }
 }
