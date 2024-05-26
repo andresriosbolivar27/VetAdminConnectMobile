@@ -54,14 +54,6 @@ class _LoginPageState extends State<LoginPage> {
           await _tokenService.saveSecureData(decodedToken, 'decodedToken');
           await _tokenService.saveSecureData(result.result!.toJson(), 'token');
           var role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as String;
-          // print('Email: ${decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']}');
-          // print('Rol: ${decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']}');
-          // print('Documento: ${decodedToken['Document']}');
-          // print('Nombre: ${decodedToken['FirstName']} ${decodedToken['LastName']}');
-          // print('Dirección: ${decodedToken['Address']}');
-          // print('Ciudad ID: ${decodedToken['CityId']}');
-          // print('ID de usuario: ${decodedToken['UserId']}');
-          // print('Fecha de expiración: ${DateTime.fromMillisecondsSinceEpoch(decodedToken['exp'] * 1000)}'); // Convert exp timestamp to DateTime
 
           if(role == 'Client' || role == 'vet'){
             _showMsg("Bienvenido");

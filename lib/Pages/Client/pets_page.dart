@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
@@ -53,58 +55,73 @@ class _PetsPageState extends State<PetsPage> {
               child: Text('Error: ${snapshot.error}'),
             );
           } else {
-            return _client != null && _client!.pets.isNotEmpty
-                ? ListView.builder(
-                    itemCount: _filteredPets.length,
-                    itemBuilder: (context, index) {
-                      final petItem = _filteredPets[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            petItem?.photo?.isNotEmpty == true
-                                ? petItem!.photo!
-                                : 'https://via.placeholder.com/150',
+            if (_client == null || _client!.pets.isEmpty) {
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.blueAccent[100],
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: const Text(
+                    'No hay mascotas',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            }else{
+              return ListView.builder(
+                itemCount: _filteredPets.length,
+                itemBuilder: (context, index) {
+                  final petItem = _filteredPets[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        petItem?.photo?.isNotEmpty == true
+                            ? petItem!.photo!
+                            : 'https://via.placeholder.com/150',
+                      ),
+                    ),
+                    title: Text(petItem.name),
+                    subtitle: Text(petItem.breedName!),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        switch (value) {
+                          case 'Editar':
+                            _editButtonClicked(petItem);
+                            break;
+                          case 'Eliminar':
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Eliminado ${petItem.name}'),
+                              ),
+                            );
+                            break;
+                        }
+                      },
+                      itemBuilder: (context) {
+                        return [
+                          const PopupMenuItem<String>(
+                            value: 'Editar',
+                            child: Text('Editar'),
                           ),
-                        ),
-                        title: Text(petItem.name),
-                        subtitle: Text(petItem.breedName!),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            switch (value) {
-                              case 'Editar':
-                                _editButtonClicked(petItem);
-                                break;
-                              case 'Eliminar':
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Eliminado ${petItem.name}'),
-                                  ),
-                                );
-                                break;
-                            }
-                          },
-                          itemBuilder: (context) {
-                            return [
-                              const PopupMenuItem<String>(
-                                value: 'Editar',
-                                child: Text('Editar'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Eliminar',
-                                child: Text('Eliminar'),
-                              ),
-                            ];
-                          },
-                        ),
-                        onTap: () {
-                          _navigateToVeterinarioDetails(petItem);
-                        },
-                      );
+                          const PopupMenuItem<String>(
+                            value: 'Eliminar',
+                            child: Text('Eliminar'),
+                          ),
+                        ];
+                      },
+                    ),
+                    onTap: () {
+                      _navigateToVeterinarioDetails(petItem);
                     },
-                  )
-                : const Center(
-                    child: CircularProgressIndicator(),
                   );
+                },
+              );
+            }
           }
         },
       ),
@@ -123,10 +140,11 @@ class _PetsPageState extends State<PetsPage> {
       String? userId = token['UserId'] as String;
       final ApiResponse<Client> apiResponse;
 
-      apiResponse = await clientRepository.getClient(
-          userId, '');
+      apiResponse = await clientRepository.getClient(userId, '');
 
       if (apiResponse.wasSuccess) {
+        Map<String, dynamic> clientIdMap = {"clientId": apiResponse.result?.clientId.toString()};
+        await _tokenService.saveSecureData(clientIdMap , 'clientId');
         setState(() {
           userId = null;
           token = {};
@@ -190,7 +208,7 @@ class _PetsPageState extends State<PetsPage> {
     setState(() {
       _filteredPets = _client!.pets
           .where((pet) =>
-          pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
+              pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
           .toList();
     });
   }

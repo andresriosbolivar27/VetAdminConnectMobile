@@ -3,10 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vetadminconnectmobile/Model/Review.dart';
 import 'package:vetadminconnectmobile/Model/Vet.dart';
+import 'package:vetadminconnectmobile/Repository/review_api/review_http_api_repository.dart';
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 class VeterinarioDetailsPage extends StatefulWidget {
   final Vet veterinario;
+
 
   const VeterinarioDetailsPage({Key? key, required this.veterinario})
       : super(key: key);
@@ -17,6 +21,8 @@ class VeterinarioDetailsPage extends StatefulWidget {
 
 class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
   double _rating = 0.0;
+  final _reviewsApi = ReviewHttpApiRepository();
+  final TokenService _tokenService = TokenService();
 
   @override
   void initState() {
@@ -67,29 +73,48 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
                         const Icon(Icons.phone_android, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Telefono: ${widget.veterinario.phoneNumber}',
+                          '${widget.veterinario.phoneNumber}',
                           style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                     Row(
+                      children: [
+                        const Icon(Icons.work_outline, size: 16),
+                        const SizedBox(width: 5),
+                        Chip(
+                          label: Text(
+                            widget.veterinario.vetSpecialities.first.name,
+                            style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          side: BorderSide.none,
+                          padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 1.0),
+                        ),
+                        Chip(
+                          label: Text(
+                            widget.veterinario.vetSpecialities.last.name,
+                            style: const TextStyle(
+                              fontSize: 11, color: Colors.black,
+                            ),
+                            textAlign: TextAlign.left,
+                          ),
+                          side: BorderSide.none,
+                          padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 1.0),
                         ),
                       ],
                     ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(Icons.pets_outlined, size: 16),
+                        const Icon(Icons.place_outlined, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Especialidad: ${widget.veterinario.vetSpecialities.isEmpty ? '' : widget.veterinario.vetSpecialities.first.name}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Row(
-                      children: [
-                        const Icon(Icons.wc_outlined, size: 16),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Ubicación: ${widget.veterinario.cityName}',
+                          '${widget.veterinario.cityName}',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
@@ -104,7 +129,7 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
                       ),
                     ),
                     RatingBar.builder(
-                      initialRating: _rating,
+                      initialRating: widget.veterinario.averageRating,
                       minRating: 1,
                       direction: Axis.horizontal,
                       allowHalfRating: false,
@@ -123,7 +148,6 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
                       },
                     ),
                     const SizedBox(height: 10),
-                    // Botón de WhatsApp
                     IconButton(
                       onPressed: () {
                         _launchWhatsApp(widget.veterinario.phoneNumber, context);
@@ -172,6 +196,7 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
   void _showRatingDialog(BuildContext context, double rating) {
     final _formKey = GlobalKey<FormState>();
     final _commentController = TextEditingController();
+
 
     showDialog(
       context: context,
@@ -231,16 +256,13 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
                   child: const Text('Cancelar'),
                 ),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       final comment = _commentController.text;
                       print('Calificación: $rating');
                       print('Comentario: $comment');
 
-                      // Simulación de envío al servidor
-
-                      Navigator.pop(context); // Cerrar el diálogo
-                      _showSnackBar(rating); // Mostrar snackbar
+                      await _addReview(context, rating, comment);
                     }
                   },
                   child: const Text('Enviar'),
@@ -253,6 +275,25 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
     );
   }
 
+  Future<void> _addReview (BuildContext context, double rating, String comment) async {
+    var clientIdMap = await _tokenService.getTokenData('clientId');
+    int clientId = int.parse(clientIdMap['clientId']);
+
+    var review = Review(
+        clientId: clientId,
+        vetId: widget.veterinario.vetId,
+        rating: rating,
+        comment: comment,
+        id: 0);
+
+    var apiResponse = await _reviewsApi.addReview(review, '');
+
+    if(apiResponse.wasSuccess){
+      Navigator.pop(context);
+      _showSnackBar(rating);
+    }
+  }
+
   void _showSnackBar(double rating) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -262,4 +303,6 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
       ),
     );
   }
+
+
 }

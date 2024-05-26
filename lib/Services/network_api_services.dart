@@ -12,6 +12,7 @@ import 'package:vetadminconnectmobile/Model/Especie.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Generic/exception_response.dart';
 import 'package:vetadminconnectmobile/Model/Raza.dart';
+import 'package:vetadminconnectmobile/Model/Review.dart';
 import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Model/Vet.dart';
 import '../Model/Generic/app_exception.dart';
@@ -86,7 +87,7 @@ class NetworkApiService<T> extends BaseService<T> {
       case 400:
         return ApiResponse<T>(wasSuccess: false, message: '',
             exceptions: [
-              ExceptionResponse(severityException: SeverityException.Error, exception: "Error en la solicitud")
+              ExceptionResponse(severityException: SeverityException.Error, exception: responseJson['exceptions'].first['exception'])
             ]);
       case 401:
       case 403:
@@ -123,6 +124,9 @@ class NetworkApiService<T> extends BaseService<T> {
         }
         if(typeName == "Breed"){
           return Raza.fromJson(json);
+        }
+        if(typeName == "Review"){
+          return Review.fromJson(json);
         }
       }if(json is List<dynamic>){
         if(typeName == "Country"){

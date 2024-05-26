@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
         Locale("en", "US"),
       ],
       theme: ThemeData(
+        primaryColor: Colors.blueAccent,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
         indicatorColor: Colors.blueAccent,
         useMaterial3: true,

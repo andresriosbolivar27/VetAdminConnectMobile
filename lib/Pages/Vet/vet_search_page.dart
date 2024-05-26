@@ -22,7 +22,7 @@ class _VetSearchPageState extends State<VetSearchPage> {
   final _searchController = TextEditingController();
   List<Vet> _especialistas = [];
   List<Vet> _filteredEspecialistas = [];
-  bool _hasMore = true;
+  bool _hasMore = false;
 
   @override
   void initState() {
@@ -35,17 +35,19 @@ class _VetSearchPageState extends State<VetSearchPage> {
 
   Future<void> _loadMoreVets() async {
     if (_hasMore) {
-      pagination.recordsNumber+=10; // Increment page number
+      pagination.page++; // Increment page number
       await getVets(); // Fetch more vets
     }
   }
 
   Future<void> getVets() async {
+    _hasMore = false;
     var response = await vetApi.getVets(pagination, '');
     if (response.wasSuccess) {
       setState(() {
+        _hasMore = true;
         _especialistas = response.result!;
-        _filteredEspecialistas = _especialistas;
+        _filteredEspecialistas+= _especialistas;
         _hasMore = response.result!.length == pagination.recordsNumber;
       });
     }
@@ -143,7 +145,6 @@ class _VetSearchPageState extends State<VetSearchPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            // Image and info row
                             children: [
                               CircleAvatar(
                                 backgroundImage:
@@ -152,15 +153,13 @@ class _VetSearchPageState extends State<VetSearchPage> {
                               ),
                               const SizedBox(width: 16.0),
                               Expanded(
-                                // Make info column flexible
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      // Row for name with icon
                                       children: [
                                         const Icon(Icons
-                                            .person_outline), // Add icon before name
+                                            .person_outline),
                                         const SizedBox(width: 8.0),
                                         Text(veterinario.fullName,
                                             style: const TextStyle(
@@ -168,49 +167,76 @@ class _VetSearchPageState extends State<VetSearchPage> {
                                                 fontWeight: FontWeight.bold)),
                                       ],
                                     ),
-                                    const SizedBox(height: 4.0),
+                                    const SizedBox(height: 8.0),
                                     Row(
                                       children: [
                                         const Icon(Icons
-                                            .place_outlined), // Add icon before specialty
+                                            .place_outlined),
                                         const SizedBox(width: 8.0),
                                         Text(
-                                            veterinario.vetSpecialities.isEmpty
-                                                ? veterinario.cityName
-                                                : '${veterinario.vetSpecialities.first.name} - ${veterinario.cityName}',
+                                            veterinario.cityName,
                                             style: const TextStyle(
                                                 fontSize: 14,
                                                 fontStyle: FontStyle.italic)),
                                       ],
                                     ),
-                                    const SizedBox(height: 4.0),
-                                    Row(
+                                    const SizedBox(height: 2.0),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Icon(Icons.work_outline),
-                                        const SizedBox(width: 8.0),
-                                        Text(
-                                            veterinario.vetSpecialities.isEmpty
-                                                ? veterinario.cityName
-                                                : '${veterinario.vetSpecialities.first.name} - ${veterinario.cityName}',
-                                            style: const TextStyle(
-                                                fontSize: 14,
-                                                fontStyle: FontStyle.italic)),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.work_outline),
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Chip(
+                                                    label: Text(
+                                                      veterinario.vetSpecialities.first.name,
+                                                      style: const TextStyle(
+                                                        fontSize: 11, color: Colors.black,
+                                                      ),
+                                                      textAlign: TextAlign.left,
+                                                    ),
+                                                    side: BorderSide.none,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 1.0),
+                                                  ), const
+                                                  Text(
+                                                    '-',
+                                                    style: TextStyle(fontSize: 13, color: Colors.black),
+                                                  ),
+                                                   Chip(
+                                                    label: Text(
+                                                      veterinario.vetSpecialities.last.name,
+                                                      style: const TextStyle(
+                                                        fontSize: 11, color: Colors.black,
+                                                      ),
+                                                      textAlign: TextAlign.left,
+                                                    ),
+                                                    side: BorderSide.none,
+                                                    padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 1.0),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8.0),
+                                    const SizedBox(height: 2.0),
                                     Row(
                                       children: [
                                         const Icon(Icons.star_border_sharp),
                                         const SizedBox(width: 8.0),
                                         RatingBar.builder(
                                           initialRating:
-                                              Random().nextDouble() * 5,
+                                          veterinario.averageRating,
+                                              //Random().nextDouble() * 5,
                                           onRatingUpdate: (rating) {
-                                            // This callback is disabled since we don't want to edit the rating
                                           },
                                           minRating: 1,
                                           maxRating: 5,
-                                          allowHalfRating: false,
+                                          allowHalfRating: true,
                                           ignoreGestures: true,
                                           itemSize: 15,
                                           itemCount: 5,
