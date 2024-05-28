@@ -143,8 +143,24 @@ class _PetsPageState extends State<PetsPage> {
       apiResponse = await clientRepository.getClient(userId, '');
 
       if (apiResponse.wasSuccess) {
-        Map<String, dynamic> clientIdMap = {"clientId": apiResponse.result?.clientId.toString()};
-        await _tokenService.saveSecureData(clientIdMap , 'clientId');
+        var client = Client(
+            apiResponse.result!.id,
+            apiResponse.result!.document,
+            apiResponse.result!.firstName,
+            apiResponse.result!.lastName,
+            apiResponse.result!.address,
+            apiResponse.result!.photo,
+            apiResponse.result!.userType,
+            apiResponse.result!.cityId,
+            apiResponse.result!.cityName,
+            apiResponse.result!.userName,
+            apiResponse.result!.email,
+            '',
+            '',
+            apiResponse.result!.phoneNumber,
+            apiResponse.result!.clientId,
+            []).toJson();
+        await _tokenService.saveSecureData(client , 'clientData');
         setState(() {
           userId = null;
           token = {};

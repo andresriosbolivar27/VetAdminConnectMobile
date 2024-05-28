@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vetadminconnectmobile/Model/User.dart';
+import 'package:vetadminconnectmobile/Pages/edit_user_Page.dart';
 import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({Key? key}) : super(key: key);
+
+  const UserProfilePage({Key? key }) : super(key: key);
 
   @override
   _UserProfilePageState createState() => _UserProfilePageState();
@@ -14,26 +16,38 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   final TokenService _tokenService = TokenService();
-  late String _name = '';
-  late String _lastName = '';
-  late String _email = '';
+  late String _name;
+  late String _lastName;
+  late String _email;
   late String _userType = '';
   File? _imageFile;
   late String _profileImageBase64;
+  User clientData = User.empty();
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _getClientData();
   }
 
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  void _getClientData() async {
+    var client = await _tokenService.getTokenData('clientData');
     setState(() {
-      _name = prefs.getString('name') ?? '';
-      _lastName = prefs.getString('lastName') ?? '';
-      _email = prefs.getString('email') ?? '';
-      _userType = prefs.getString('userType') ?? '';
+      clientData.id = client['id'];
+      clientData.document = client['document'];
+      clientData.firstName = client['firstName'];
+      clientData.lastName = client['lastName'];
+      clientData.address = client['address'];
+      clientData.photo = client['photo'];
+      clientData.userType = client['userType'];
+      clientData.cityId = client['cityId'];
+      clientData.cityName = client['cityName'];
+      clientData.userName = client['userName'];
+      clientData.email = client['email'];
+      clientData.password = '';
+      clientData.passwordConfirm =  '';
+      clientData.phoneNumber = client['phoneNumber'];
+      _userType = clientData.userType == 1 ? 'Cliente' : 'Veterinario';
     });
   }
 
@@ -106,6 +120,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
   }
 
+  void _editButtonClicked() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditUserPage(user: clientData),
+      ),
+    );
+    if (result != null && result) {
+      setState(() {
+        _getClientData();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,13 +144,11 @@ class _UserProfilePageState extends State<UserProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               CircleAvatar(
-                radius: 60,
-                backgroundImage:
-                _imageFile != null ? FileImage(_imageFile!) : null,
+                radius: 80,
+                backgroundImage: clientData.photo != null ? NetworkImage(clientData.photo!,scale: 0.1) : null,
                 child: IconButton(
-                  icon: const Icon(Icons.camera_alt),
+                  icon: const Icon(Icons.camera_alt, color:Colors.transparent),
                   onPressed: () {
-                    _showImagePicker(context);
                   },
                 ),
               ),
@@ -131,9 +157,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Nombre Usuario',
-                      style: TextStyle(
+                    Text(
+                      clientData.firstName,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.blueAccent,
@@ -144,7 +170,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         const Icon(Icons.email_outlined, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Correo electrónico: $_email',
+                          clientData.email,
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
@@ -155,7 +181,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         const Icon(Icons.person_outline, size: 16),
                         const SizedBox(width: 5),
                         Text(
-                          'Tipo de usuario: $_userType',
+                          _userType,
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],
@@ -168,9 +194,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 style: TextButton.styleFrom(
                     textStyle: const TextStyle(
                         fontSize: 16, color: Colors.blueAccent)),
-                onPressed: () {
-                  // Implementar navegación a la página de edición del perfil
-                },
+                onPressed: _editButtonClicked,
                 child: const Text('Editar Perfil'),
               ),
               const SizedBox(height: 20),

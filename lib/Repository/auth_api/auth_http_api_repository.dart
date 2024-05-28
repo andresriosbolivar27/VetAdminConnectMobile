@@ -2,6 +2,7 @@ import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/LoginDto.dart';
 import 'package:vetadminconnectmobile/Model/TokenResult.dart';
+import 'package:vetadminconnectmobile/Model/User.dart';
 import 'package:vetadminconnectmobile/Repository/auth_api/auth_repository.dart';
 import 'package:vetadminconnectmobile/Services/base_service.dart';
 import 'package:vetadminconnectmobile/Services/network_api_services.dart';
@@ -26,6 +27,15 @@ class AuthHttpApiRepository implements AuthRepository {
     apiServices = NetworkApiService("NewClient");
     final response = await apiServices.getPostApiResponse(
         AppUrl.registerApiEndPoint, data.toJson(), token);
+    return response;
+  }
+
+  @override
+  Future<ApiResponse<String>> updateClientApi(User data, String token) async{
+    late BaseService<String> apiServices;
+    apiServices = NetworkApiService("String");
+    final response = await apiServices.getPutApiResponse(
+        AppUrl.updateApiEndPoint, data.toJson(), token);
     return response;
   }
 }

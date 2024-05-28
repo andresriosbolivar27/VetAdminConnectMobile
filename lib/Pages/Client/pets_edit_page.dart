@@ -316,7 +316,6 @@ class _EditPetPageState extends State<EditPetPage> {
     final int petBreedId = _selectedBreed!.id;
     final SizeType petSize = _selectedSize;
     String? petImage;
-    File fileImage;
 
     if (_imageFile != null) {
       petImage = base64Encode(_imageFile!.readAsBytesSync());

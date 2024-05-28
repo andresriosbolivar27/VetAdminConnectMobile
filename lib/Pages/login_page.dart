@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           await _tokenService.saveSecureData(result.result!.toJson(), 'token');
           var role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] as String;
 
-          if(role == 'Client' || role == 'vet'){
+          if(role == 'Client' || role == 'Vet'){
             _showMsg("Bienvenido");
             Navigator.pushReplacement(
                 context, MaterialPageRoute(builder: (context) => const HomePageTabsPage()));

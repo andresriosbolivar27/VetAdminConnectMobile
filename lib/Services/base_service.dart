@@ -5,4 +5,6 @@ abstract class BaseService<T> {
 
   Future<ApiResponse<T>> getPostApiResponse(String url , Map<String, dynamic> data, String bearerToken);
 
+  Future<ApiResponse<T>> getPutApiResponse(String url , Map<String, dynamic> data, String bearerToken);
+
 }

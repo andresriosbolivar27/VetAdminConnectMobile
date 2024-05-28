@@ -60,7 +60,7 @@ class NetworkApiService<T> extends BaseService<T> {
       final response = await http.post(
         Uri.parse(url),
         headers: headers,
-        body: jsonEncode(data), // Encode data as JSON
+        body: jsonEncode(data),
       ).timeout(const Duration(seconds: 10));
       return _handleResponse<T>(response);
     } on SocketException {
@@ -70,7 +70,6 @@ class NetworkApiService<T> extends BaseService<T> {
     } on FormatException catch (e) {
       throw e.toString();
     } catch (e) {
-      // Catch-all for unexpected exceptions
       print('Error fetching data: $e');
       rethrow; // Re-throw to propagate the error
     }
@@ -153,5 +152,36 @@ class NetworkApiService<T> extends BaseService<T> {
       }
     });
     return deserialized;
+  }
+
+  @override
+  Future<ApiResponse<T>> getPutApiResponse(String url, Map<String, dynamic> data, String bearerToken) async {
+    if (kDebugMode) {
+      print(url);
+      print(data);
+    }
+    try {
+      final Map<String, String> headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+      };
+      if (bearerToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $bearerToken';
+      }
+      final response = await http.put(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(data),
+      ).timeout(const Duration(seconds: 10));
+      return _handleResponse<T>(response);
+    } on SocketException {
+      throw NoInternetException("No Internet Connection");
+    } on TimeoutException {
+      throw FetchDataException('Network Request time out');
+    } on FormatException catch (e) {
+      throw e.toString();
+    } catch (e) {
+      print('Error fetching data: $e');
+      rethrow; // Re-throw to propagate the error
+    }
   }
 }

@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
       home: const SplashPage(),
       routes: {
         '/login': (context) => const LoginPage(),
-        '/userProfile': (context) => const UserProfilePage(),
       },
     );
   }

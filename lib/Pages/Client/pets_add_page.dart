@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,7 +10,6 @@ import 'package:vetadminconnectmobile/Model/Especie.dart';
 import 'package:vetadminconnectmobile/Model/Generic/api_response.dart';
 import 'package:vetadminconnectmobile/Model/Pet.dart';
 import 'package:vetadminconnectmobile/Model/Raza.dart';
-import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Repository/breed_api/breed_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/client_api/client_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/specie_api/specie_http_api_repository.dart';

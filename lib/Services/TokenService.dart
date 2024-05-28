@@ -66,4 +66,16 @@ class TokenService {
       SnackBar(content: Text(message)),
     );
   }
+
+  Future<void> updateSecureData(Map<String, dynamic> newData, String key) async {
+    final tokenJson = await _secureStorage.read(key: key);
+    if (tokenJson != null) {
+      final existingData = Map<String, dynamic>.from(json.decode(tokenJson));
+      existingData.addAll(newData); // Actualiza los datos existentes con los nuevos datos
+      final updatedTokenJson = json.encode(existingData);
+      await _secureStorage.write(key: key, value: updatedTokenJson);
+    } else {
+      throw Exception('No se encontraron datos para la llave especificada: $key');
+    }
+  }
 }

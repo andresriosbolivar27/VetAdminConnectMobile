@@ -115,7 +115,7 @@ class User {
     'lastName': _lastName,
     'address': _address,
     'photo': _photo,
-    'userType': _userType.toString().split('.').last,
+    'userType': _userType,
     'cityId': _cityId,
     'cityName': _cityName,
     'userName': _userName,

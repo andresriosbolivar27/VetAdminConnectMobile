@@ -1,30 +1,35 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:country_state_city_pro/country_state_city_pro.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:vetadminconnectmobile/Model/City.dart';
-import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/Country.dart';
 import 'package:vetadminconnectmobile/Model/Departamento.dart';
+import 'package:vetadminconnectmobile/Model/User.dart';
 import 'package:vetadminconnectmobile/Repository/auth_api/auth_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/city_api/city_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/country_api/country_http_api_repository.dart';
 import 'package:vetadminconnectmobile/Repository/state_api/state_http_api_repository.dart';
+import 'package:http/http.dart' as http;
+import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
 import '../utils.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class EditUserPage extends StatefulWidget {
+  final User user;
+
+  const EditUserPage({Key? key, required this.user}) : super(key: key);
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<EditUserPage> createState() => _EditUserPageState();
 }
 
 enum Genre { male, female }
-
 enum UserType {
   client(1, 'Cliente'),
   vet(2, 'Veterinario');
@@ -34,40 +39,61 @@ enum UserType {
   final String roleName;
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _EditUserPageState extends State<EditUserPage> {
   final _accountApi = AuthHttpApiRepository();
   final _countryApiRepository = CountryHttpApiRepository();
   final _stateApiRepository = StateHttpApiRepository();
   final _cityApiRepository = CityHttpApiRepository();
+  final TokenService _tokenService = TokenService();
 
-  final _name = TextEditingController();
-  final _lastName = TextEditingController();
-  final _document = TextEditingController();
-  final _phone = TextEditingController();
-  final _address = TextEditingController();
-  final _country = TextEditingController();
-  final _state = TextEditingController();
-  final _city = TextEditingController();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
-  final _repPassword = TextEditingController();
-  final _roleController = TextEditingController();
-  final _countryId = TextEditingController();
-  final _stateId = TextEditingController();
-  final _cityId = TextEditingController();
-  bool _passwordVisible = true;
-  bool _repPasswordVisible = true;
+  late TextEditingController _name;
+  late TextEditingController _lastName;
+  late TextEditingController _document;
+  late TextEditingController _phone;
+  late TextEditingController _address;
+  late TextEditingController _country;
+  late TextEditingController _state;
+  late TextEditingController _city;
+  late TextEditingController _email;
+  late TextEditingController _roleController;
+  late TextEditingController _countryId;
+  late TextEditingController _stateId;
+  late TextEditingController _cityId;
+  late TextEditingController _cityIdSearch;
   String _birthDate = "Fecha de Nacimiento";
-  Genre? _genre = Genre.male;
+  Genre? _genre;
   String _genreSelected = 'Masculino';
-  File? _profileImagePath;
+  File? _imageFile;
+  File? _imageCloudFile;
+  String? _imageCloudFileBase64;
   int userTypeSelected = 0;
-  String? _profileImageBase64;
-
-
   List<Country> _countries = [];
   List<Departamento> _states = [];
   List<City> _cities = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _name = TextEditingController(text: widget.user.firstName);
+    _lastName = TextEditingController(text: widget.user.lastName);
+    _document = TextEditingController(text: widget.user.document);
+    _phone = TextEditingController(text: widget.user.phoneNumber);
+    _address = TextEditingController(text: widget.user.address);
+    _country = TextEditingController();
+    _state = TextEditingController();
+    _city = TextEditingController();
+    _email = TextEditingController(text: widget.user.email);
+    _roleController = TextEditingController();
+    _countryId = TextEditingController(text: '47' /*widget.user.countryId.toString()*/);
+    _stateId = TextEditingController(text:'776'/*widget.user.stateId.toString()*/);
+    _cityId = TextEditingController(text: widget.user.cityId.toString());
+    _cityIdSearch = TextEditingController(text: widget.user.cityId.toString());
+    userTypeSelected = widget.user.userType;
+    if (widget.user.photo != null && widget.user.photo!.isNotEmpty) {
+      _imageCloudFile = File(widget.user.photo!);
+      _loadImageFromNetwork();
+    }
+  }
 
   String _dateConverter(DateTime newDate) {
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
@@ -97,15 +123,28 @@ class _RegisterPageState extends State<RegisterPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  @override
-  void initState() {
-    super.initState();
+  Future<void> _loadImageFromNetwork() async {
+    try {
+      http.Response response = await http.get(Uri.parse(widget.user.photo!));
+      if (response.statusCode == 200) {
+        final Uint8List bytes = response.bodyBytes;
+        _imageCloudFileBase64 = base64Encode(bytes);
+      } else {
+        print(
+            'Error al cargar la imagen desde la nube: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error al cargar la imagen desde la nube: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     double dropdownWidth = MediaQuery.of(context).size.width * 0.91;
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Detalles de ${widget.user.firstName}'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Center(
@@ -186,7 +225,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   keyboardType: TextInputType.emailAddress,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) =>
-                      value!.isValidEmail() ? null : 'Correo invalido',
+                  value!.isValidEmail() ? null : 'Correo invalido',
                 ),
                 const SizedBox(
                   height: 16.0,
@@ -198,6 +237,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     countryId: _countryId,
                     stateId: _stateId,
                     cityId: _cityId,
+                    cityIdSearch:_cityIdSearch,
                     dialogColor: Colors.grey.shade200,
                     textFieldDecoration: const InputDecoration(
                         filled: false,
@@ -207,51 +247,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                 color: Colors.black,
                                 style: BorderStyle.solid,
                                 strokeAlign: BorderSide.strokeAlignCenter)))),
-                const SizedBox(
-                  height: 16.0,
-                ),
-                TextFormField(
-                  controller: _password,
-                  obscureText: _passwordVisible,
-                  decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: 'Contraseña',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                        icon: Icon(_passwordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility),
-                        onPressed: () {
-                          setState(() {
-                            _passwordVisible = !_passwordVisible;
-                          });
-                        },
-                      ),
-                      helperText: '*Campo obligatorio'),
-                  keyboardType: TextInputType.text,
-                ),
-                const SizedBox(
-                  height: 16.0,
-                ),
-                TextFormField(
-                  controller: _repPassword,
-                  obscureText: _repPasswordVisible,
-                  decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
-                      labelText: 'Repita la contraseña',
-                      prefixIcon: const Icon(Icons.lock),
-                      suffixIcon: IconButton(
-                          icon: Icon(_repPasswordVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility),
-                          onPressed: () {
-                            setState(() {
-                              _repPasswordVisible = !_repPasswordVisible;
-                            });
-                          }),
-                      helperText: '*Campo obligatorio'),
-                  keyboardType: TextInputType.text,
-                ),
                 const SizedBox(
                   height: 16.0,
                 ),
@@ -287,24 +282,23 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ],
                 ),
-                DropdownMenu<UserType>(
-                  width: dropdownWidth,
-                  controller: _roleController,
-                  requestFocusOnTap: true,
-                  label: const Text('Tipo Usuario'),
-                  onSelected: (UserType? userType) {
-                    setState(() {
-                      userTypeSelected = userType!.id;
-                    });
-                  },
-                  dropdownMenuEntries: UserType.values
-                      .map<DropdownMenuEntry<UserType>>((UserType role) {
-                    return DropdownMenuEntry<UserType>(
-                      value: role,
-                      label: role.roleName,
-                      enabled: role.name != 'Grey',
+                DropdownButtonFormField(
+                  value: userTypeSelected,
+                  items: UserType.values
+                      .map((UserType role) {
+                    return DropdownMenuItem(
+                      value: role.id,
+                      child: Text(role.roleName),
                     );
                   }).toList(),
+                  onChanged: (int? value) {
+                    setState(() {
+                      userTypeSelected = value!;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                      labelText: 'Tipo Usuario',
+                      border: OutlineInputBorder()),
                 ),
                 const SizedBox(
                   height: 16.0,
@@ -325,8 +319,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 16.0),
                 CircleAvatar(
                   radius: 60,
-                  backgroundImage:
-                  _profileImagePath != null ? FileImage(_profileImagePath!) : null,
+                  backgroundImage: _loadImage(),
                   child: IconButton(
                     icon: const Icon(Icons.camera_alt),
                     onPressed: () {
@@ -334,14 +327,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     },
                   ),
                 ),
-                //_buildProfilePicture(),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   style: TextButton.styleFrom(
                     textStyle: const TextStyle(fontSize: 14),
                   ),
-                  onPressed: _onRegisterButtonClicked,
-                  child: const Text("Registrar"),
+                  onPressed: _onSaveButtonClicked,
+                  child: const Text("Guardar"),
                 ),
               ],
             ),
@@ -349,6 +341,21 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  ImageProvider<Object>? _loadImage() {
+    ImageProvider<Object>? image;
+    setState(() {
+      if (_imageFile != null) {
+        image = FileImage(_imageFile!);
+      } else if (_imageCloudFile != null) {
+        image = NetworkImage(_imageCloudFile!.path);
+      } else {
+        image = null;
+      }
+    });
+
+    return image;
   }
 
   Future<void> _showImagePicker(BuildContext context) async {
@@ -383,114 +390,83 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     if (image != null) {
-      final File file = File(image.path);
+      final compressedImage = await _compressImage(image);
       setState(() {
-        _profileImagePath = file;
-        _profileImageBase64 = base64Encode(file.readAsBytesSync());
+        _imageFile = compressedImage;
       });
     }
   }
 
-  void _onRegisterButtonClicked() {
+  Future<File?> _compressImage(XFile imageFile) async {
+    final imagePath = imageFile.path;
+    final compresedFIle = File(imagePath);
+    final picture = await FlutterImageCompress.compressWithFile(
+      imagePath,
+      quality:40, // Adjust quality as needed (lower = smaller size)
+    );
+
+    await compresedFIle.writeAsBytes(picture!);
+    return compresedFIle;
+  }
+
+  void _onSaveButtonClicked() {
     setState(() {
-      if (_password.text.isEmpty ||
-          _repPassword.text.isEmpty ||
-          _email.text.isEmpty) {
-        showMessage("ERROR: Debe digitar correo electrónico y las contraseñas");
+      if (_email.text.isEmpty) {
+        showMessage("ERROR: Debe digitar correo electrónico");
       } else {
         if (!_email.text.isValidEmail()) {
           showMessage("ERROR: El correo electrónico no es válido");
         } else {
-          if (!Utils.isSizePasswordValid(_password.text)) {
-            showMessage(
-                "ERROR: La contraseña debe tener mas de 6 o más digitos");
-          } else {
-            if (_password.text == _repPassword.text) {
-              registerUser();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Usuario registrado'),
-                ),
-              );
-              Navigator.pop(context);
-            } else {
-              showMessage("ERROR: Las contraseñas no son iguales");
-            }
-          }
+          saveUser();
+          Navigator.pop(context, true);
         }
       }
     });
   }
 
-  Future<void> registerUser() async {
-    var client = Client(
-      '',
-      _document.text,
-      _name.text,
-      _lastName.text,
-      _address.text,
-        _profileImageBase64,
-      userTypeSelected,
-      int.parse(_cityId.text),
-      '',
-      _email.text,
-      _email.text,
-      _password.text,
-      _repPassword.text,
-      _phone.text,
-      0,
-      []
+  Future<void> saveUser() async {
+    String? userImage;
+
+    if (_imageFile != null) {
+      userImage = base64Encode(_imageFile!.readAsBytesSync());
+    } else if (_imageCloudFile != null) {
+      userImage = _imageCloudFileBase64;
+    } else {
+      userImage = null;
+    }
+
+    var client = User(
+        widget.user.id,
+        _document.text,
+        _name.text,
+        _lastName.text,
+        _address.text,
+        userImage,
+        userTypeSelected,
+        int.parse(_cityId.text),
+        _birthDate,
+        _email.text,
+        _email.text,
+        widget.user.password,
+        widget.user.password,
+        _phone.text
     );
 
-    var result = await _accountApi.createClientApi(client, '') ;
+    var token = await _tokenService.getTokenData('token');
+    var result = await _accountApi.updateClientApi(client, token['token']);
 
-    if(result.wasSuccess){
-      showMessage('Su cuenta ha sido creada con éxito. Se te ha enviado un correo electrónico con las instrucciones para activar tu usuario.');
+    if (result.wasSuccess) {
+      token.clear();
+      await _tokenService.updateSecureData(client.toJson(),'clientData');
+      showMessage('La información del usuario ha sido actualizada con éxito.');
     }
   }
-
-  Future<void> _loadCountriesAsync() async {
-    if (!_countries.any((element) => false)) {
-      var countries = await _countryApiRepository.getCombo('');
-      if (countries.wasSuccess) {
-        _countries = countries.result!;
-      }
-    }
-  }
-
-  Future<void> _loadStatesAsync(int countryId) async {
-    if (!_cities.any((element) => false)) {
-      var states = await _stateApiRepository.getCombo(countryId, '');
-      if (states.wasSuccess) {
-        _states = states.result!;
-      }
-    }
-  }
-
-  Future<void> _loadCitiesAsync(int stateId) async {
-    if (!_cities.any((element) => false)) {
-      var cities = await _cityApiRepository.getCombo(stateId, '');
-      if (cities.wasSuccess) {
-        _cities = cities.result!;
-      }
-    }
-  }
-
-  // Future<void> createUser(User user) async{
-  //   var result = await _firebaseApi.createUser(user);
-  //   Navigator.pop(context);
-  // }
-
-  // void _saveUser(User user) async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   prefs.setString("user", jsonEncode(user));
-  // }
 }
 
 extension on String {
   bool isValidEmail() {
     return RegExp(
-            r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
+        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
         .hasMatch(this);
   }
 }

@@ -35,6 +35,12 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detalles de ${widget.veterinario.fullName}'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
       ),
       body: Center(
         child: Card(
@@ -276,8 +282,8 @@ class _VeterinarioDetailsPageState extends State<VeterinarioDetailsPage> {
   }
 
   Future<void> _addReview (BuildContext context, double rating, String comment) async {
-    var clientIdMap = await _tokenService.getTokenData('clientId');
-    int clientId = int.parse(clientIdMap['clientId']);
+    var clientDataMap = await _tokenService.getTokenData('clientData');
+    int clientId = clientDataMap['clientId'];
 
     var review = Review(
         clientId: clientId,
