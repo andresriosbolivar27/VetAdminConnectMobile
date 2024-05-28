@@ -121,6 +121,12 @@ class _VetSearchPageState extends State<VetSearchPage> {
           decoration: const InputDecoration(
             hintText: 'Nombre, especialidad o ciudad...',
             suffixIcon: Icon(Icons.search),
+            fillColor: Colors.blueAccent,
+
+            iconColor: Colors.blueAccent,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.blueAccent), // Cambia el color aquí
+            ),
           ),
         ),
       ),
@@ -129,7 +135,7 @@ class _VetSearchPageState extends State<VetSearchPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blueAccent),
             );
           } else if (snapshot.hasError) {
             return Center(
@@ -183,11 +189,12 @@ class _VetSearchPageState extends State<VetSearchPage> {
                       if (_hasMore) {
                         return const Center(
                             child:
-                            CircularProgressIndicator());
+                            CircularProgressIndicator(color: Colors.blueAccent,));
                       } else {
                         return const Center(
                             child: Text(
-                                'No se encontraron más veterinarios'));
+                              'No se encontraron más veterinarios'
+                              , style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 20)));
                       }
                     }
                     final veterinario = _filteredEspecialistas[index];
@@ -219,6 +226,8 @@ class _VetSearchPageState extends State<VetSearchPage> {
               Row(
                 children: [
                   CircleAvatar(
+                    foregroundColor: Colors.blue[100],
+                    backgroundColor: Colors.blue[100],
                     backgroundImage: Image.network(veterinario.address).image,
                     radius: 30,
                   ),

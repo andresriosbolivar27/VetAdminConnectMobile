@@ -39,6 +39,9 @@ class _PetsPageState extends State<PetsPage> {
           decoration: const InputDecoration(
             hintText: 'Buscar mascota...',
             suffixIcon: Icon(Icons.search),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.blueAccent),
+            ),
           ),
           onChanged: _filterPets,
         ),
@@ -48,7 +51,7 @@ class _PetsPageState extends State<PetsPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(color: Colors.blueAccent,),
             );
           } else if (snapshot.hasError) {
             return Center(
@@ -79,6 +82,8 @@ class _PetsPageState extends State<PetsPage> {
                   final petItem = _filteredPets[index];
                   return ListTile(
                     leading: CircleAvatar(
+                      foregroundColor: Colors.blue[100],
+                      backgroundColor: Colors.blue[100],
                       backgroundImage: NetworkImage(
                         petItem?.photo?.isNotEmpty == true
                             ? petItem!.photo!

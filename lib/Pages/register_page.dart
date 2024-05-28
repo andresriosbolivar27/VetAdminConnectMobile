@@ -328,7 +328,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   backgroundImage:
                   _profileImagePath != null ? FileImage(_profileImagePath!) : null,
                   child: IconButton(
-                    icon: const Icon(Icons.camera_alt),
+                    icon: const Icon(Icons.camera_alt, color: Colors.blueAccent),
                     onPressed: () {
                       _showImagePicker(context);
                     },

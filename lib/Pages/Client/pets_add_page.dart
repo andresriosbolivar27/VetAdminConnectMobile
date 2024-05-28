@@ -112,7 +112,7 @@ class _AddPetPageState extends State<AddPetPage> {
                 backgroundImage:
                 _imageFile != null ? FileImage(_imageFile!) : null,
                 child: IconButton(
-                  icon: const Icon(Icons.camera_alt),
+                  icon: const Icon(Icons.camera_alt, color: Colors.blueAccent),
                   onPressed: () {
                     _showImagePicker(context);
                   },

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -128,7 +129,7 @@ class _EditPetPageState extends State<EditPetPage> {
                 radius: 60,
                 backgroundImage: _loadImage(),
                 child: IconButton(
-                  icon: const Icon(Icons.camera_alt),
+                  icon: const Icon(Icons.camera_alt, color: Colors.blueAccent),
                   onPressed: () {
                     _showImagePicker(context);
                   },
@@ -247,7 +248,7 @@ class _EditPetPageState extends State<EditPetPage> {
                     await _editPet();
                   }
                 },
-                child: const Text('Actualizar Mascota'),
+                child: const Text('Actualizar Mascota', style: TextStyle(color: Colors.blueAccent)),
               ),
             ],
           ),

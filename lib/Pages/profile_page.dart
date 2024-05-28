@@ -101,7 +101,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: const Text('Cancelar', style: TextStyle(color: Colors.blueAccent)),
             ),
             TextButton(
               onPressed: () async {
@@ -112,7 +112,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       (Route<dynamic> route) => false,
                 );
               },
-              child: const Text('Aceptar'),
+              child: const Text('Aceptar', style: TextStyle(color: Colors.blueAccent)),
             ),
           ],
         );
@@ -145,6 +145,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
             children: [
               CircleAvatar(
                 radius: 80,
+                foregroundColor: Colors.blue[100],
+                backgroundColor: Colors.blue[100],
                 backgroundImage: clientData.photo != null ? NetworkImage(clientData.photo!,scale: 0.1) : null,
                 child: IconButton(
                   icon: const Icon(Icons.camera_alt, color:Colors.transparent),
@@ -158,31 +160,54 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      clientData.firstName,
+                      clientData.fullName,
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.blueAccent,
                       ),
                     ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.email_outlined, size: 16),
+                        const Icon(Icons.email_outlined, size: 20),
                         const SizedBox(width: 5),
                         Text(
                           clientData.email,
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 20),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.person_outline, size: 16),
+                        const Icon(Icons.place_outlined, size: 20),
                         const SizedBox(width: 5),
                         Text(
-                          _userType,
-                          style: const TextStyle(fontSize: 16),
+                          clientData.cityName,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.place_outlined, size: 20),
+                        const SizedBox(width: 5),
+                        Text(
+                          clientData.address,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.phone_android_outlined, size: 20),
+                        const SizedBox(width: 5),
+                        Text(
+                          clientData.phoneNumber,
+                          style: const TextStyle(fontSize: 20),
                         ),
                       ],
                     ),
@@ -195,7 +220,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     textStyle: const TextStyle(
                         fontSize: 16, color: Colors.blueAccent)),
                 onPressed: _editButtonClicked,
-                child: const Text('Editar Perfil'),
+                child: const Text('Editar Perfil', style: TextStyle(color: Colors.blueAccent),),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -205,7 +230,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 onPressed: () async {
                   await _logout(context);
                 },
-                child: const Text('Cerrar Sesión'),
+                child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.blueAccent)),
               ),
             ],
           ),

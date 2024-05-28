@@ -321,7 +321,7 @@ class _EditUserPageState extends State<EditUserPage> {
                   radius: 60,
                   backgroundImage: _loadImage(),
                   child: IconButton(
-                    icon: const Icon(Icons.camera_alt),
+                    icon: const Icon(Icons.camera_alt, color: Colors.blueAccent),
                     onPressed: () {
                       _showImagePicker(context);
                     },
@@ -330,10 +330,10 @@ class _EditUserPageState extends State<EditUserPage> {
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 14),
+                    textStyle: const TextStyle(fontSize: 20),
                   ),
                   onPressed: _onSaveButtonClicked,
-                  child: const Text("Guardar"),
+                  child: const Text("Actualizar", style: TextStyle(color: Colors.blueAccent),),
                 ),
               ],
             ),

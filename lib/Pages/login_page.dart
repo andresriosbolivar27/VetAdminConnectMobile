@@ -179,10 +179,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 ElevatedButton(
                   style: TextButton.styleFrom(
-                    textStyle: const TextStyle(fontSize: 14),
+                    textStyle: const TextStyle(fontSize: 20),
                   ),
                   onPressed: _onLoginButtonClicked,
-                  child: const Text("Iniciar sesión"),
+                  child: const Text("Iniciar sesión", style: TextStyle(color: Colors.blueAccent),),
                 ),
                 const SizedBox(
                   height: 16.0,
@@ -190,9 +190,9 @@ class _LoginPageState extends State<LoginPage> {
                 TextButton(
                   style: TextButton.styleFrom(
                       textStyle: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontStyle: FontStyle.italic,
-                          color: Colors.blue)),
+                          color: Colors.blueAccent)),
                   onPressed: () {
                     Navigator.push(
                         context,
