@@ -188,8 +188,12 @@ class _VetSearchPageState extends State<VetReviewsPage> {
                     final review = _filteredReviews[index];
                     var conse = Random().nextInt(100);
                     review.client!.photo= 'https://picsum.photos/200/30$conse';
-
-                    return _buildListItem(review);
+                    return Column(
+                      children: [
+                        _buildListItem(review),
+                        const Divider(), // Divider entre cada revisión
+                      ],
+                    );
                   },
                 ),
               );
