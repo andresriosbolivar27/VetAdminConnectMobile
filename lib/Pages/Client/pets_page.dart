@@ -58,7 +58,7 @@ class _PetsPageState extends State<PetsPage> {
               child: Text('Error: ${snapshot.error}'),
             );
           } else {
-            if (_client == null || _client!.pets.isEmpty) {
+            if (_client == null || _client!.pets!.isEmpty) {
               return Center(
                 child: Container(
                   padding: const EdgeInsets.all(20.0),
@@ -170,7 +170,7 @@ class _PetsPageState extends State<PetsPage> {
           userId = null;
           token = {};
           _client = apiResponse.result;
-          _filteredPets = _client!.pets;
+          _filteredPets = _client!.pets!;
         });
       } else {
         _showMsg(apiResponse.exceptions!.first.exception ??
@@ -227,7 +227,7 @@ class _PetsPageState extends State<PetsPage> {
 
   void _filterPets(String searchTerm) {
     setState(() {
-      _filteredPets = _client!.pets
+      _filteredPets = _client!.pets!
           .where((pet) =>
               pet.name.toLowerCase().contains(searchTerm.toLowerCase()))
           .toList();

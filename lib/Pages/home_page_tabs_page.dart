@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vetadminconnectmobile/Model/Client.dart';
 import 'package:vetadminconnectmobile/Model/User.dart';
+import 'package:vetadminconnectmobile/Pages/Vet/vet_reviews_page.dart';
 import 'package:vetadminconnectmobile/Pages/Vet/vet_search_page.dart';
 import 'package:vetadminconnectmobile/Pages/profile_page.dart';
 import 'package:vetadminconnectmobile/Services/TokenService.dart';
@@ -97,7 +98,7 @@ class _HomePageTabsPageState extends State<HomePageTabsPage> {
         ),
         body: const TabBarView(
           children: [
-            PetsPage(),
+            VetReviewsPage(),
             UserProfilePage(),
           ],
         ),

@@ -146,6 +146,9 @@ class NetworkApiService<T> extends BaseService<T> {
         if(typeName == "Breed"){
           return json.map((json) => Raza.fromJson(json)).toList();
         }
+        if(typeName == "Review"){
+          return json.map((json) => Review.fromJson(json)).toList();
+        }
       }
       else {
         throw Exception('Unsupported result type: ${json.runtimeType}');

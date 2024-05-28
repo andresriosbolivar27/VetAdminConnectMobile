@@ -7,7 +7,6 @@ import 'package:vetadminconnectmobile/Model/Generic/app_exception.dart';
 import 'package:vetadminconnectmobile/Model/LoginDto.dart';
 import 'package:vetadminconnectmobile/Model/TokenResult.dart';
 import 'package:vetadminconnectmobile/Pages/register_page.dart';
-import 'package:vetadminconnectmobile/Repository/auth_api/auth_http_api_repository.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:vetadminconnectmobile/Services/TokenService.dart';
 
@@ -110,12 +109,7 @@ class _LoginPageState extends State<LoginPage> {
   });
   return deserialized;
 }
-/*  void _getUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    Map<String, dynamic> userMap = jsonDecode(prefs.getString("user")!);
-    userLoaded = User.fromJson(userMap);
-  }
-*/
+
   @override
   void initState() {
 //    _getUser();

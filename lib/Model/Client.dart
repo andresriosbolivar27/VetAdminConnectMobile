@@ -4,13 +4,13 @@ import 'package:vetadminconnectmobile/Model/User.dart';
 
 class Client extends User {
   int _clientId;
-  List<Pet> _pets;
+  List<Pet>? _pets;
 
   int get clientId => _clientId;
   set clientId(int value) => _clientId = value;
 
-  List<Pet> get pets => _pets;
-  set pets(List<Pet> value) => _pets = value;
+  List<Pet>? get pets => _pets;
+  set pets(List<Pet>? value) => _pets = value;
 
   Client(
       String id,
@@ -28,7 +28,7 @@ class Client extends User {
       String? passwordConfirm,
       String phoneNumber,
       int clientId,
-      List<Pet> pets,
+      List<Pet>? pets,
       )   : _clientId = clientId,
         _pets = pets,
         super(
@@ -86,7 +86,7 @@ class Client extends User {
       json['passwordConfirm'],
       json['phoneNumber'],
       json['clientId'],
-      (json['pets'] as List<dynamic>)
+      (json['pets'] as List<dynamic>?)!
           .map((petJson) => Pet.fromJson(petJson))
           .toList(),
     );
@@ -109,7 +109,7 @@ class Client extends User {
       'passwordConfirm': passwordConfirm,
       'phoneNumber': phoneNumber,
       'clientId': clientId,
-      'pets': pets.map((pet) => pet.toJson()).toList(),
+      'pets': pets?.map((pet) => pet.toJson()).toList(),
     };
   }
 }
